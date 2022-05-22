@@ -1,0 +1,11 @@
+{
+  "name": "FPF",
+  "version": "1.0.0",
+  "factorio_version": "1.1",
+  "title": "Frostpunk Theme in Factorio",
+  "dependencies": ["base >= 1.1.0"],
+  "author": "gungorenu",
+  "contact": "None",
+  "homepage": "None",
+  "description": "Adds special entities which can allow player to run a Frostpunk like theme. Sets up world to make it look like Frostpunk"
+}
