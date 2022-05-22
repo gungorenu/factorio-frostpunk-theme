@@ -18,15 +18,11 @@ end
 data:extend(furnaceEntities)
 
 -- fake infinite technologies
-local infTechnologies = {}
-for i=1, furnacePowerMax, 1 do
-  local infPowerTech = get_furnace_power_upgrade_inf_tech(i, powerUpgrade)
-  table.insert(infTechnologies, infPowerTech)
-end
-for i=1, furnaceEffMax, 1 do
-  local infEffTech = get_furnace_eff_upgrade_inf_tech(i, effUpgrade)
-  table.insert(infTechnologies, infEffTech)
-end
+local infTechnologies = {
+  get_furnace_power_upgrade_inf_tech(1, powerUpgrade),
+  get_furnace_eff_upgrade_inf_tech(1, effUpgrade)
+}
+
 data:extend(infTechnologies)
 
 

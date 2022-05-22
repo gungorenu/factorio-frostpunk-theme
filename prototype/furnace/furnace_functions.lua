@@ -214,7 +214,7 @@ end
 function get_furnace_power_upgrade_inf_tech(id, powerUpgrade)
   local tech = {
     type = "technology",
-    name = "fpf-furnace-power-upgrade-inf-"..id,
+    name = "fpf-furnace-power-upgrade-inf-1",
     icons = {
       {
         icon = "__FPF__/graphics/technology/furnace.png",
@@ -228,9 +228,9 @@ function get_furnace_power_upgrade_inf_tech(id, powerUpgrade)
       }
     },
     localised_name = {"technology-name.fpf-furnace-power-upgrade-inf", id },
-    localised_description = {"technology-description.fpf-furnace-power-upgrade-inf", 48 + id * powerUpgrade},
+    localised_description = {"technology-description.fpf-furnace-power-upgrade-inf", powerUpgrade},
     prerequisites = {"fpf-furnace-power-upgrade-6", "space-science-pack"},
-    upgrade = true,
+    max_level = "infinite",
     effects =
     {
       {
@@ -267,7 +267,7 @@ end
 function get_furnace_eff_upgrade_inf_tech(id, effUpgrade)
   local tech = {
     type = "technology",
-    name = "fpf-furnace-eff-upgrade-inf-"..id,
+    name = "fpf-furnace-eff-upgrade-inf-1",
     icons = {
       {
         icon = "__FPF__/graphics/technology/furnace.png",
@@ -280,10 +280,10 @@ function get_furnace_eff_upgrade_inf_tech(id, effUpgrade)
         shift = {100, 100}
       }
     },
-    localised_name = {"technology-name.fpf-furnace-eff-upgrade-inf", id },
-    localised_description = {"technology-description.fpf-furnace-eff-upgrade-inf", 100 + id * effUpgrade},
+    --localised_name = {"technology-name.fpf-furnace-eff-upgrade-inf", id },
+    localised_description = {"technology-description.fpf-furnace-eff-upgrade-inf", effUpgrade},
     prerequisites = {"fpf-furnace-power-upgrade-6", "space-science-pack"},
-    upgrade = true,
+    max_level = "infinite",
     effects =
     {
       {

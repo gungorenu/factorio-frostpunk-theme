@@ -88,16 +88,16 @@ local on_research_finished = function(event)
     if not tonumber(number) then return end
     local index = research.force.index
 
-    script_data.furnace_power = 48 + furnacePowerUpgrade * number -- we know infinite furnace starts from 48MW
-    dumpFurnaceStats("furnace infinite power upgrade caught, tech upgrade: " .. number)
+    script_data.furnace_power = script_data.furnace_power + furnacePowerUpgrade
+    dumpFurnaceStats("furnace infinite power upgrade caught, tech upgrade")
     update_furnaces()
   elseif name:find("fpf%-furnace%-eff%-upgrade%-inf%-") then
     local number = name:sub(name:len())
     if not tonumber(number) then return end
     local index = research.force.index
 
-    script_data.furnace_efficiency = 1 + (furnaceEffUpgrade/100) * number
-    dumpFurnaceStats("furnace infinite efficiency upgrade caught, tech upgrade: " .. number)
+    script_data.furnace_efficiency = script_data.furnace_efficiency + (furnaceEffUpgrade/100)
+    dumpFurnaceStats("furnace infinite efficiency upgrade caught, tech upgrade")
     update_furnaces()
   elseif name:find("fpf%-furnace%-power%-upgrade%-") then
     local number = name:sub(name:len())
@@ -115,17 +115,22 @@ local lib = {}
 
 lib.events =
 {
+  -- we need these to track furnaces
   [defines.events.on_built_entity] = on_created_entity,
   [defines.events.on_robot_built_entity] = on_created_entity,
   [defines.events.script_raised_built] = on_created_entity,
   [defines.events.script_raised_revive] = on_created_entity,
   [defines.events.on_entity_cloned] = on_created_entity,
+--  [defines.events.on_entity_damaged] = on_entity_damaged,
+--  [defines.events.on_entity_died] = on_entity_removed,
+
+  -- we need this to track our fake-infinite research
+  [defines.events.on_research_finished] = on_research_finished, 
+
+
+--  [defines.events.script_raised_destroy] = on_entity_removed,
 
 --  [defines.events.on_tick] = on_tick,
---  [defines.events.on_entity_damaged] = on_entity_damaged,
-  [defines.events.on_research_finished] = on_research_finished,
-
---  [defines.events.on_entity_died] = on_entity_removed,
 --  [defines.events.script_raised_destroy] = on_entity_removed,
 --  [defines.events.on_player_mined_entity] = on_entity_removed,
 --  [defines.events.on_robot_mined_entity] = on_entity_removed,
