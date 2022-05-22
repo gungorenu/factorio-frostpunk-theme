@@ -18,3 +18,9 @@ function get_science_pack_list (red, green, black, blue, purple, yellow, white)
   return sciences
 end    
 
+function table_length(T)
+  local count = 0
+  for _ in pairs(T) do count = count + 1 end
+  return count
+end
+

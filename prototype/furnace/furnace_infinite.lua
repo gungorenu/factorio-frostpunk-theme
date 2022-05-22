@@ -13,7 +13,7 @@ for i=0, furnacePowerMax, 1 do
     local eff = 1 + (effUpgrade * j)/100
     local furnace = get_furnace("upgraded-power-"..i.."-eff-"..j, power, eff)
     table.insert(furnaceEntities, furnace)
-  end
+  end   
 end
 data:extend(furnaceEntities)
 

@@ -182,7 +182,20 @@ function get_furnace_upgrade_tech_power(id, count, time, red, green, black, blue
       {
         {
           type = "nothing",
-          effect_description = {"fpf-furnace-power-upgrade-bonus", powerUpgrade}
+          effect_description = {"fpf-furnace-power-upgrade-bonus", powerUpgrade},
+          icons = {
+            {
+              icon = "__FPF__/graphics/technology/furnace.png",
+              icon_size = 256, icon_mipmaps = 1
+            },
+            {
+              icon = "__FPF__/graphics/technology/furnace-power.png",
+              icon_size = 128,
+              icon_mipmaps = 3,
+              scale = 0.25,
+              shift = {11, 9}
+            }
+          }        
         }      
       },
       unit = {
@@ -302,4 +315,27 @@ function get_furnace_eff_upgrade_inf_tech(id, effUpgrade)
     table.insert(tech.prerequisites, "fpf-furnace-eff-upgrade-inf-"..(id-1))
   end
   return tech
+end
+
+function get_furnace_name(power,eff, powerUpgradeBonus, effUpgradeBonus)
+  -- partially upgraded furnace
+  if power <48 and eff == 1 then
+    local version = (power/6) -2
+    return "fpf-furnace-" .. version
+  end
+
+  -- fully upgraded furnace
+  if power ==48 and eff == 1 then return "fpf-furnace-6" end
+
+  -- infinite furnaces
+  local powerId = 0
+  if powerUpgradeBonus > 0 then
+    powerId = (power - 48) / powerUpgradeBonus
+  end
+  local effId = 0
+  if eff > 1 then
+    effId = (eff - 1) / effUpgradeBonus
+  end
+
+  return "fpf-furnace-upgraded-power-"..powerId .."-eff-".. effId
 end
