@@ -15,11 +15,18 @@ local script_data =
   furnace_name = "fpf-furnace-0"
 }
 
+
 -- dump state info
 local function dumpFurnaceStats(msg)
   if isDebug then
     local baseMsg = "FPF[".. global.fpf_furnace.furnace_name .."/#" .. table_length(global.fpf_furnace.furnace_map) .. "/" .. global.fpf_furnace.furnace_power .. "MW/%" .. global.fpf_furnace.furnace_efficiency * 100 .. "] >> "
     game.print({"", baseMsg .. msg })
+  end
+end
+
+local function dumpPrint(msg)
+  if isDebug then
+    game.print({"", msg })
   end
 end
 
@@ -37,11 +44,91 @@ local add_to_furnace_map = function(furnace)
   dumpFurnaceStats(msg)
 end
 
--- replace existing furnaces
-local update_furnaces = function ()
-  -- TODO
+-- replace existing furnace with new one
+local replace_furnace = function (oldEntity, newFurnaceName)
+  -- Save stats that can't be fast replaced
+  local health = oldEntity.health
+  local last_user = oldEntity.last_user
+  local users = {}
+  for _, player in pairs(game.players) do
+    if player.opened == oldEntity then
+      table.insert(users, player)
+    end
+  end
 
+  dumpPrint("" .. oldEntity.name )
+
+  local fuelInventory = oldEntity.get_inventory(defines.inventory.fuel).get_contents()
+  local burner = oldEntity.burner
+  local fuelBurning = burner.currently_burning
+  local remainingBurning = burner.remaining_burning_fuel
+
+  -- Fast replace
+  local new_entity = oldEntity.surface.create_entity{
+    fast_replace = true,
+    name = newFurnaceName,
+    position = oldEntity.position,
+    direction = oldEntity.direction,
+    force = oldEntity.force,
+    spill = false,
+    create_build_effect_smoke = false,
+  }
+
+  if new_entity then
+    -- Update stats
+    new_entity.health = health
+    if last_user then
+      new_entity.last_user = last_user
+    end
+    for _, player in pairs(users) do
+      player.opened = new_entity
+    end
+
+    new_entity.burner.remaining_burning_fuel = remainingBurning
+    new_entity.burner.currently_burning = fuelBurning
+    -- below was not needed
+    -- local inventory = new_entity.get_inventory(defines.inventory.fuel)
+    -- for item_name, item_count in pairs(fuelInventory) do
+    --   inventory.insert{name = item_name, count = item_count}
+    -- end
+  end
+
+  return new_entity
+end
+
+-- update existing furnaces
+local update_furnaces = function ()
   script_data.furnace_name = get_furnace_name(script_data.furnace_power, script_data.furnace_efficiency, furnacePowerUpgrade, furnaceEffUpgrade/100)
+  
+  local toRemove = {}
+  local toAppend = {}
+  for _, entity in pairs (script_data.furnace_map) do
+    if entity.valid then
+      if entity.name ~= script_data.furnace_name then
+        dumpPrint{"replacing furnace at: " .. entity.position.x .."/" .. entity.position.y }
+        local newFurnace = replace_furnace(entity, script_data.furnace_name)
+        table.insert(toAppend, newFurnace)
+      end
+    else
+      table.insert(toRemove, entity)
+    end
+  end
+
+  -- remove old ones
+  for k, entityToRemove in pairs (toRemove) do
+    for v, entityInList in pairs (script_data.furnace_map) do
+      if entityInList == entityToRemove then
+        table.remove(script_data.furnace_map, v)
+        break
+      end
+    end
+  end
+
+  -- add new ones
+  for _, entity in pairs(toAppend) do 
+    add_to_furnace_map(entity)
+  end
+
   dumpFurnaceStats("furnace update code here")
 end
 
@@ -51,7 +138,7 @@ local on_created_entity = function(event)
   if not (entity and entity.valid) then return end
   
   local name = entity.name
-  if name:find("fpf-furnace%-") then
+  if name:find("fpf%-furnace%-") then
     add_to_furnace_map(entity)
   end
 end
@@ -69,11 +156,6 @@ local check_furnace_update = function(event)
     --     end
     --   end
     -- end
-end
-  
--- on every tick
-local on_tick = function(event)
---  check_furnace_update(event)
 end
 
 -- capture tech upgrades
@@ -109,6 +191,7 @@ local on_research_finished = function(event)
     update_furnaces()
   end
 end
+
 
 -- lib register
 local lib = {}
