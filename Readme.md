@@ -23,18 +23,43 @@ the mod shall put dependency on some mods on mod portal since the ambiance fits 
 
 todo list for the mod
 
-- MEDIUM *Furnace Upgrades:* furnace must be upgradable within progression of game. entities shall be replaced by code. also infinite research is an option as well (partially infinite)
-- MEDIUM *Random Furnace Generation:* on map furnaces shall spawn with exploration, plus one close to rocket crash site
-  - HARD *Cliff Generation:* cliffs have to be generated manually by code since game can never make such a structure. maybe skipped for initial versions?
-- HARD *Prevent Building:* the main idea is to build stuff around furnaces, not outside, if game engine allows then also implement it, not a big deal if Player wants to avoid this rule since power can always be delivered with poles.
-- EASY *Supplementary Burner Generator:* a simple generator for outposts since they also require power. SBG mod looks perfect for that, and it shall be part of this mod (I shall copy code of it)
+- MEDIUM **Manual Spawn Furnace:** spawn a furnace on map
+- MEDIUM **Check Furnace Distance:** furnaces should be spawned when reaches a certain distance, so I need to be able to understand how to get distances of two entities
+- MEDIUM **Clear Area Before Spawn:** this is the case where there are already many cliffs/trees/biters on the area we want to spawn furnace, a clearance is needed first but will not clear everything, only to enable furnace and maybe remnants
+- HARD **Manual Spawn Cliffs:** spawn the FPF cliffs on map, surrounding the furnace
+- HARD **Spawn Crater With Script:** this is the code of Abandoned Ruins mod, hopefully taking code shall be easy
+- HARD **Prevent Building:** the main idea is to build stuff around furnaces, not outside, if game engine allows then also implement it, not a big deal if Player wants to avoid this rule since power can always be delivered with poles.
+- EASY **Supplementary Burner Generator:** a simple generator for outposts since they also require power. SBG mod looks perfect for that, and it shall be part of this mod (I shall copy code of it)
+- EASY **Disable Power Options:** while in Factorio they have good use, in the Frostpunk theme they are absolutely cheating and against the idea of the theme. Steam Engine, Solar Panel and nuclear power (Nuclear Reactor, Steam Turbine, Heat Pipe, Heat Exchanger) shall be disabled. 
+- EASY **Abandoned Resources:** spawning a single furnace seems weird, maybe I should put some chests around furnace, and even turrets etc? like the Abandoned Ruins mod. if there shall be turrets then probably I need to define a new force which is enemy to player and ally to furnace force, maybe?
 
 theme extension changes planned. below shall not be forced, but very recommended and maybe by default they shall be activated.
-- EASY *Burner Lamp / Torch:* a lamp which has no power requirement because it gets power from burner fuel
-- EASY *Beacon Changes:* I think of updating beacons for some changes. beacons should allow more slots (4) and +2 range but should stall machines if more than one beacon affects a machine. there are mods for this and an existing mod code shall be taken. not decided yet and it is just an idea.
-- EASY *Effectivity Modules:* since power is a big limiter now, they are more important now. the eff-2 and eff-3 modules shall have a bump on their stats, and maybe have speed bonus as well
-- EASY *Oil Cracking:* water recipes for oil processing and cracking shall be changed to steam
-- EASY *Disable Power Options:* while in Factorio they have good use, in the Frostpunk theme they are absolutely cheating and against the idea of the theme. Steam Engine, Solar Panel and nuclear power (Nuclear Reactor, Steam Turbine, Heat Pipe, Heat Exchanger) shall be disabled. 
+- EASY **Burner Lamp / Torch:** a lamp which has no power requirement because it gets power from burner fuel
+- EASY **Beacon Changes:** I think of updating beacons for some changes. beacons should allow more slots (4) and +2 range but should stall machines if more than one beacon affects a machine. there are mods for this and an existing mod code shall be taken. not decided yet and it is just an idea.
+- EASY **Effectivity Modules:** since power is a big limiter now, they are more important now. the eff-2 and eff-3 modules shall have a bump on their stats, and maybe have speed bonus as well
+- EASY **Oil Cracking:** water recipes for oil processing and cracking shall be changed to steam
+- EASY **Enable Power Options:** although disabled, the player can enable the power options with this mod, will be a little cheaty but player defines if it is cheat or not
+
+### Done
+
+these are done and hopefully will not be broken
+
+- DONE **Claim Tool:** all abandoned entities (furnaces etc) must be claimed by player before usage
+- DONE **Furnace Force:** all generated furnaces belong to this force so manipulation is easy
+- DONE **Unclaimed Furnace Activation:** prevent player leeching power from furnace without claim
+- DONE **Settings for Map Entity Generation:** furnace generation settingsm
+
+### Bugs
+
+some issues I created somehow or realized I need to fix
+
+- FIXED? **Pollution:** early (non-upgraded) furnaces have very low pollution. 20 boiler, 40 steam engine produces pollution 600/m with 36MW, furnace will do 480 at 48MW, and a lot lower on lower power or with efficiency upgrades
+
+## Won't Work
+
+some ideas will not work due to some game engine etc
+
+- fast replace furnaces did not work, power output was never in full when done so. maybe game bug? workaround was to destroy entity and create new one
 
 # Second Version (fluffy)
 
@@ -66,6 +91,7 @@ I am not a good modder but there are an abundant number of good mods with code a
 - Alternative Steam by Degraine
 - SBG by Ondra4260
 - Burner Fuel Bonus by DaveMcW
+- No Lakes by Pithlit
 
 and of course Frostpunk and Factorio game copyrights are owned by the developers of those games, I am just a fan of both games
 

@@ -35,4 +35,28 @@ data:extend({
         setting_type = "startup",
         default_value = false,
     },
+    {
+        type = "int-setting",
+        name = "fpf-furnace-spawn-baserate",
+        setting_type = "runtime-global",
+        default_value = 10,
+        minimum_value = 1,
+        maximum_value = 100
+     },
+     {
+        type = "int-setting",
+        name = "fpf-furnace-spawn-mindistance",
+        setting_type = "runtime-global",
+        default_value = 250,
+        minimum_value = 200
+     },
+     {
+        type = "int-setting",
+        name = "fpf-furnace-spawn-rateincrement-perchunk",
+        setting_type = "runtime-global",
+        default_value = 5,
+        minimum_value = 1,
+        maximum_value = 100
+     },
+
   })

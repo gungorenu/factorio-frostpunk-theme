@@ -15,7 +15,7 @@ local function hit_effects_entity(offset_deviation, offset)
 end
 
 local function get_emission( furnacePower, furnaceEffectivity)
-  local def = 360
+  local def = 480
   local effModifier = 1 + (furnaceEffectivity -1) * 3 -- effectivity bonus applies trippled
   local emission = (def * furnacePower / 48) / effModifier
   return emission
@@ -36,7 +36,7 @@ function get_furnace(nameSuffix, furnacePower, furnaceEffectivity)
     icon_size = 64, icon_mipmaps = 4,
     localised_name = {localisedName, furnacePower, furnaceEffectivity*100},
     localised_description = {localisedDesc, furnacePower, furnaceEffectivity*100 },
-    flags = {"placeable-neutral", "not-rotatable", "player-creation", "not-deconstructable", "not-blueprintable", "not-upgradable" },
+    flags = {"placeable-neutral", "not-rotatable", "not-deconstructable", "not-blueprintable", "not-upgradable" },
     minable = nil,
     max_health = 1000,
     rotate = false,
@@ -57,6 +57,9 @@ function get_furnace(nameSuffix, furnacePower, furnaceEffectivity)
       usage_priority = "secondary-output"
     },
 
+    map_color = {r = 0.2, g = 0, b = 0},
+    friendly_map_color = {r = 0.2, g = 0, b = 0},
+    enemy_map_color = {r = 0.6, g = 0.3, b = 0},
     burner = {
       type = "burner",
       fuel_category = "chemical",
