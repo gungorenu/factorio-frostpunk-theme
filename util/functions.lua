@@ -20,7 +20,11 @@ end
 
 function table_length(T)
   local count = 0
-  for _ in pairs(T) do count = count + 1 end
+  for v in pairs(T) do 
+    if v then 
+      count = count + 1 
+    end
+  end
   return count
 end
 

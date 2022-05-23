@@ -61,7 +61,7 @@ function get_furnace(nameSuffix, furnacePower, furnaceEffectivity)
       type = "burner",
       fuel_category = "chemical",
       effectivity = furnaceEffectivity,
-      fuel_inventory_size = 3,
+      fuel_inventory_size = 1,
       emissions_per_minute = get_emission(furnacePower, furnaceEffectivity),
       light_flicker =
       {
