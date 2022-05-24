@@ -39,23 +39,23 @@ data:extend({
         type = "int-setting",
         name = "fpf-furnace-spawn-baserate",
         setting_type = "runtime-global",
-        default_value = 10,
-        minimum_value = 1,
+        default_value = 3,
+        minimum_value = 0, -- this or rate increment per chunk must be positive or never going to spawn a furnace
         maximum_value = 100
      },
      {
         type = "int-setting",
         name = "fpf-furnace-spawn-mindistance",
         setting_type = "runtime-global",
-        default_value = 250,
-        minimum_value = 200
+        default_value = 512, -- 16 chunk
+        minimum_value = 256 -- 8 chunk, some cities can be large
      },
      {
         type = "int-setting",
         name = "fpf-furnace-spawn-rateincrement-perchunk",
         setting_type = "runtime-global",
-        default_value = 5,
-        minimum_value = 1,
+        default_value = 1,
+        minimum_value = 0, -- this or rate increment per chunk must be positive or never going to spawn a furnace
         maximum_value = 100
      },
 

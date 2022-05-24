@@ -28,3 +28,17 @@ function table_length(T)
   return count
 end
 
+function get_distance(point1, point2)
+  local x2 = point1.x - point2.x
+  x2 = x2 * x2
+
+  local y2 = point1.y - point2.y
+  y2 = y2 * y2
+
+  local t2 = x2 + y2
+  return math.sqrt(t2)
+end
+
+function get_chunk_center (chunkPos)
+  return {x= chunkPos.x * 32 + 16, y = chunkPos.y * 32 - 16}
+end

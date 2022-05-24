@@ -23,8 +23,7 @@ the mod shall put dependency on some mods on mod portal since the ambiance fits 
 
 todo list for the mod
 
-- MEDIUM **Manual Spawn Furnace:** spawn a furnace on map
-- MEDIUM **Check Furnace Distance:** furnaces should be spawned when reaches a certain distance, so I need to be able to understand how to get distances of two entities
+- MEDIUM **Random Spawn Furnace:** spawn a furnace on map, randomly, at initial area and also at map randomly
 - MEDIUM **Clear Area Before Spawn:** this is the case where there are already many cliffs/trees/biters on the area we want to spawn furnace, a clearance is needed first but will not clear everything, only to enable furnace and maybe remnants
 - HARD **Manual Spawn Cliffs:** spawn the FPF cliffs on map, surrounding the furnace
 - HARD **Spawn Crater With Script:** this is the code of Abandoned Ruins mod, hopefully taking code shall be easy
@@ -32,8 +31,10 @@ todo list for the mod
 - EASY **Supplementary Burner Generator:** a simple generator for outposts since they also require power. SBG mod looks perfect for that, and it shall be part of this mod (I shall copy code of it)
 - EASY **Disable Power Options:** while in Factorio they have good use, in the Frostpunk theme they are absolutely cheating and against the idea of the theme. Steam Engine, Solar Panel and nuclear power (Nuclear Reactor, Steam Turbine, Heat Pipe, Heat Exchanger) shall be disabled. 
 - EASY **Abandoned Resources:** spawning a single furnace seems weird, maybe I should put some chests around furnace, and even turrets etc? like the Abandoned Ruins mod. if there shall be turrets then probably I need to define a new force which is enemy to player and ally to furnace force, maybe?
+- EASY **Random Seed to Map Seed:** there are some random number usages and they should be linked to map seed for better and redictable randomness, tied to setting
 
 theme extension changes planned. below shall not be forced, but very recommended and maybe by default they shall be activated.
+
 - EASY **Burner Lamp / Torch:** a lamp which has no power requirement because it gets power from burner fuel
 - EASY **Beacon Changes:** I think of updating beacons for some changes. beacons should allow more slots (4) and +2 range but should stall machines if more than one beacon affects a machine. there are mods for this and an existing mod code shall be taken. not decided yet and it is just an idea.
 - EASY **Effectivity Modules:** since power is a big limiter now, they are more important now. the eff-2 and eff-3 modules shall have a bump on their stats, and maybe have speed bonus as well
@@ -44,6 +45,8 @@ theme extension changes planned. below shall not be forced, but very recommended
 
 these are done and hopefully will not be broken
 
+- DONE **Spawn Infrastructure:** infrastructure about where to spawn what is there, but not the spawning code
+- DONE **Check Furnace Distance:** furnaces should be spawned when reaches a certain distance, so I need to be able to understand how to get distances of two entities
 - DONE **Claim Tool:** all abandoned entities (furnaces etc) must be claimed by player before usage
 - DONE **Furnace Force:** all generated furnaces belong to this force so manipulation is easy
 - DONE **Unclaimed Furnace Activation:** prevent player leeching power from furnace without claim
