@@ -1,23 +1,4 @@
-function get_science_pack_list (red, green, black, blue, purple, yellow, white)
-  local sciences = {}
-
-  if red >0 then table.insert(sciences, {"automation-science-pack", 1} ) end
-
-  if green >0 then table.insert(sciences, {"logistic-science-pack", 1} ) end
-  
-  if black >0 then table.insert(sciences, {"military-science-pack", 1} ) end
-  
-  if blue >0 then table.insert(sciences, {"chemical-science-pack", 1} ) end
-  
-  if purple >0 then table.insert(sciences, {"production-science-pack", 1} ) end
-  
-  if yellow >0 then table.insert(sciences, {"utility-science-pack", 1} ) end
-  
-  if white >0 then table.insert(sciences, {"space-science-pack", 1} ) end
-
-  return sciences
-end    
-
+-- table item count
 function table_length(T)
   local count = 0
   for v in pairs(T) do 
@@ -28,6 +9,7 @@ function table_length(T)
   return count
 end
 
+-- get distance between two positions
 function get_distance(point1, point2)
   local x2 = point1.x - point2.x
   x2 = x2 * x2
@@ -35,10 +17,18 @@ function get_distance(point1, point2)
   local y2 = point1.y - point2.y
   y2 = y2 * y2
 
-  local t2 = x2 + y2
-  return math.sqrt(t2)
+  return math.sqrt(x2 + y2)
 end
 
-function get_chunk_center (chunkPos)
-  return {x= chunkPos.x * 32 + 16, y = chunkPos.y * 32 - 16}
+-- get chunk center
+function get_chunk_center (chunkPos, modx, mody)
+  return {x= chunkPos.x * 32 + 16 + (modx or 0), y = chunkPos.y * 32 - 16 + (mody or 0)}
 end
+
+-- dump print
+function dprint(msg)
+  if settings.global["fpf-debug"].value then
+    game.print({"", msg })
+  end
+end
+

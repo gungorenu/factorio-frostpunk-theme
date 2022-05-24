@@ -3,12 +3,12 @@
 
 require("./util/functions")
 require("./prototype/furnace/furnace_functions")
+local spawning = require("spawning")
 
 -------------------------------------------------------------------------------------------------------------------------------
 ---- Mod State and Settings ---------------------------------------------------------------------------------------------------
 
 -- settings
-local isDebug = settings.startup["fpf-debug"].value
 local furnacePowerUpgrade = settings.startup["fpf-furnace-upgrade-power-upgrade"].value -- in MW, defaults to 3MW
 local furnaceEffUpgrade = settings.startup["fpf-furnace-upgrade-eff-upgrade"].value -- in %, defaults to %5
 local furnaceSpawnBaseRate = settings.global["fpf-furnace-spawn-baserate"].value
@@ -17,14 +17,19 @@ local furnaceSpawnProbPerChunk = settings.global["fpf-furnace-spawn-rateincremen
 
 -- mod state info
 -- global.furnace_map = {}, -- any spawned furnace shall be put here, not only claimed
+-- entry >> [ entity.unit_number ] = entity
+-- entry >> destroyed/removed entities are removed from this list
 -- global.furnace_history = {}, -- custom data, all furnaces, including destroyed ones
+-- entry >> [ position as "x/y" ] = { position = {x, y}, initial = furnace type name (will not be updated), claimed = boolean, dead = boolean }
+-- entry >> all entries are here, even destroyed, and spawn check shall use this, not the furnace_map
 -- global.furnace_power = 12, -- starting in MW
 -- global.furnace_efficiency = 1, -- starting in %, *100
 -- global.furnace_name = "fpf-furnace-0", -- to spawn this furnace, when upgraded the upgraded furnace shall be spawned, all furnaces are upgraded automatically
 -- global.fpf_force = nil,
 -- global.furnace_spawn_queue = {}, -- any entry here shall be spawn and nil after spawn
+-- entry >> global.furnace_spawn_queue[ tick ] = { chunkPos = {x, y}, surface = surface entity, force = force entity, furnace_name = furnace to spawn, spawn_complete = boolean } 
+-- entry >> once spawn is complete the entry should be deleted
 -- global.first_furnace_created = false
-
 
 -- map center
 local mapCenter = get_chunk_center({x=0, y=0})
@@ -33,37 +38,22 @@ local mapCenter = get_chunk_center({x=0, y=0})
 ---- Development Stuff --------------------------------------------------------------------------------------------------------
 
 -- dump state info
-local function dumpFurnaceStats(msg)
-  if isDebug then
+local function dump_stats(msg)
+  if settings.global["fpf-debug"].value then
     local baseMsg = "FPF[".. global.furnace_name .."/#" .. table_length(global.furnace_map) .. "/" .. global.furnace_power .. "MW/%" .. global.furnace_efficiency * 100 .. "] >> "
     game.print({"", baseMsg .. msg })
 
     for _, f in pairs(global.furnace_map) do
       if not f then 
-        game.print({"", "furnace is nil" })
+        dprint("furnace is nil")
       elseif f.valid then
-        game.print({"", "F: " .. f.unit_number .. ", name: " .. f.name .. ", at " .. f.position.x .. "/" .. f.position.y })
+        dprint("F: " .. f.unit_number .. ", name: " .. f.name .. ", at " .. f.position.x .. "/" .. f.position.y)
       else
-        game.print({"", "furnace is invalid" })
+        dprint("furnace is invalid")
       end
     end
   end
 end
-
--- dump print
-local function dumpPrint(msg)
-  if isDebug then
-    game.print({"", msg })
-  end
-end
-
--- dump isnull
-local function isnil(value)
-  if value then
-    return value
-  end
-  return "nil"
-end  
 
 -------------------------------------------------------------------------------------------------------------------------------
 ---- Functions ----------------------------------------------------------------------------------------------------------------
@@ -77,7 +67,7 @@ local add_furnace_record = function(furnace)
   furnace.operable = false
   furnace.active = false
   
-  dumpFurnaceStats("furnace added: #".. furnace.unit_number .. ", @" .. furnace.position.x .. "/" .. furnace.position.y)
+  dump_stats("furnace added: #".. furnace.unit_number .. ", @" .. furnace.position.x .. "/" .. furnace.position.y)
 end
 
 -- swap furnace at map
@@ -85,7 +75,7 @@ local swap_furnace_record = function(oldFurnaceId, newFurnace)
   global.furnace_map[oldFurnaceId] = nil
   global.furnace_map[newFurnace.unit_number] = newFurnace
   
-  dumpFurnaceStats("furnace swapped: #".. oldFurnaceId .. " >> #" .. newFurnace.unit_number .. ", @" .. newFurnace.position.x .. "/" .. newFurnace.position.y)
+  dump_stats("furnace swapped: #".. oldFurnaceId .. " >> #" .. newFurnace.unit_number .. ", @" .. newFurnace.position.x .. "/" .. newFurnace.position.y)
 end
 
 -- remove furnace from map
@@ -93,7 +83,7 @@ local remove_furnace_record = function(furnace)
   global.furnace_map[furnace.unit_number] = nil
   global.furnace_history["" .. furnace.position.x .. "/" .. furnace.position.y].dead = true
   
-  dumpFurnaceStats("furnace removed: #".. furnace.unit_number)
+  dump_stats("furnace removed: #".. furnace.unit_number)
 end
 
 -- replace existing furnace with new one
@@ -165,15 +155,20 @@ end
 -- update existing furnaces
 local update_furnaces = function ()
   global.furnace_name = get_furnace_name(global.furnace_power, global.furnace_efficiency, furnacePowerUpgrade, furnaceEffUpgrade/100)
-  
-  for i, entity in pairs (global.furnace_map) do
+
+  local toUpdate = {}
+  for _, entity in pairs (global.furnace_map) do
     if entity.valid then
       if entity.name ~= global.furnace_name then
-        local oldId = entity.unit_number
-        local newFurnace = replace_furnace_on_map(entity, global.furnace_name)
-        swap_furnace_record(oldId, newFurnace)
+        table.insert(toUpdate, entity)
       end
     end
+  end
+
+  for _, entity in pairs (toUpdate) do
+    local oldId = entity.unit_number
+    local newFurnace = replace_furnace_on_map(entity, global.furnace_name)
+    swap_furnace_record(oldId, newFurnace)
   end
 end
 
@@ -222,8 +217,19 @@ local spawn_furnace = function(furnaceSpawnInfo, tick)
   if not furnaceSpawnInfo.spawn_complete then
     -- TODO -- spawn furnace and its crater
 
-    dumpPrint( "generating done (" .. furnaceSpawnInfo.furnace_name .. ") at " .. furnaceSpawnInfo.chunkPos.x .."/" .. furnaceSpawnInfo.chunkPos.y .. ", surface: " .. furnaceSpawnInfo.surface.name )
-    furnaceSpawnInfo.spawn_complete = true
+    local result = spawning.spawn_furnace(10, furnaceSpawnInfo.surface, global.fpf_force, furnaceSpawnInfo.chunkPos, furnaceSpawnInfo.furnace_name )
+    if result.res == 1 then
+      if result.entity and result.entity.valid then 
+        dprint( "generating done (" .. furnaceSpawnInfo.furnace_name .. ") at " .. furnaceSpawnInfo.chunkPos.x .."/" .. furnaceSpawnInfo.chunkPos.y .. ", surface: " .. furnaceSpawnInfo.surface.name )
+        furnaceSpawnInfo.spawn_complete = true
+      else
+        dprint( "attempt gave good response but no entity" )
+      end
+    elseif result.res == -1 then
+      dprint( "doh, invalid surface" )
+    elseif result.res == -2 then 
+      dprint( "after countless tries we failed" )
+    end
   end
 end
 
@@ -299,6 +305,7 @@ end
 
 -- on chunk generated
 local on_chunk_generated = function (event)
+  global.chunks_checked = global.chunks_checked +1
   local spawnChance = get_furnace_spawn_chance(event.position)
   local prob = math.random()
 
@@ -436,6 +443,7 @@ local defaults = function ()
   global.fpf_force = global.fpf_force or nil
   global.furnace_spawn_queue = global.furnace_spawn_queue or {}
   global.first_furnace = global.first_furnace or nil
+  global.chunks_checked = global.chunks_checked or 0
 end
 
 local self_init = function()

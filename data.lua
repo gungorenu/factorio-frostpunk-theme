@@ -11,5 +11,3 @@ for name,tile in pairs(data.raw.tile) do
       data.raw.tile[name].autoplace = nil
   end
 end
-
-

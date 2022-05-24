@@ -1,6 +1,6 @@
 require("././util/functions")
 
-local isDebugActive = settings.startup["fpf-debug"].value
+local named_entities = settings.startup["fpf-namedentities"].value
 
 local function hit_effects_entity(offset_deviation, offset)
   local offset = offset or {0, 1}
@@ -24,9 +24,9 @@ end
 function get_furnace(nameSuffix, furnacePower, furnaceEffectivity)
   local localisedName = "entity-name.fpf-furnace"
   local localisedDesc = "entity-description.fpf-furnace"
-  if isDebugActive then
-    localisedName = "entity-name.fpf-furnace-debug"
-    localisedDesc = "entity-description.fpf-furnace-debug"
+  if named_entities then
+    localisedName = "entity-name.fpf-furnace-named"
+    localisedDesc = "entity-description.fpf-furnace-named"
   end
 
   local furnace = {
@@ -159,6 +159,26 @@ function get_furnace(nameSuffix, furnacePower, furnaceEffectivity)
   }
   return furnace
 end
+
+local function get_science_pack_list (red, green, black, blue, purple, yellow, white)
+  local sciences = {}
+
+  if red >0 then table.insert(sciences, {"automation-science-pack", 1} ) end
+
+  if green >0 then table.insert(sciences, {"logistic-science-pack", 1} ) end
+  
+  if black >0 then table.insert(sciences, {"military-science-pack", 1} ) end
+  
+  if blue >0 then table.insert(sciences, {"chemical-science-pack", 1} ) end
+  
+  if purple >0 then table.insert(sciences, {"production-science-pack", 1} ) end
+  
+  if yellow >0 then table.insert(sciences, {"utility-science-pack", 1} ) end
+  
+  if white >0 then table.insert(sciences, {"space-science-pack", 1} ) end
+
+  return sciences
+end    
 
 function get_furnace_upgrade_tech_power(id, count, time, red, green, black, blue, purple, yellow, white)
   local powerUpgrade = 6

@@ -19,7 +19,8 @@ data:extend
     selection_cursor_box_type = "train-visualization",
     alt_selection_cursor_box_type = "train-visualization",
     always_include_tiles = true,
-    flags = {"only-in-cursor", "spawnable"}
+    flags = {"only-in-cursor", "spawnable"},
+    subgroup = "tool",
   },
   {
     type = "shortcut",

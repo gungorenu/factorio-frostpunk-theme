@@ -107,3 +107,16 @@ for i=0, 6, 1 do
 end  
 
 data:extend(furnaceEntities)
+
+-- signal in case someone wants to use it
+data:extend({
+  {
+    type = "virtual-signal",
+    name = "fpf-signal",
+    icon = "__FPF__/graphics/icons/furnace.png",
+    icon_size = 64, icon_mipmaps = 4,
+    --group = "production"
+    subgroup = "energy",
+  }
+})
+

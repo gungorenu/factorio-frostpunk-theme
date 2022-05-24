@@ -21,13 +21,13 @@ the mod shall put dependency on some mods on mod portal since the ambiance fits 
 
 ## TODO
 
+general priority is the item order seen here
+
 todo list for the mod
 
-- MEDIUM **Random Spawn Furnace:** spawn a furnace on map, randomly, at initial area and also at map randomly
-- MEDIUM **Clear Area Before Spawn:** this is the case where there are already many cliffs/trees/biters on the area we want to spawn furnace, a clearance is needed first but will not clear everything, only to enable furnace and maybe remnants
+- HARD **Define Cliff Maps:** this is the hardest part. first I need to make a cliff pattern and then make it spawn-able through a script. another problem is how to define and align the cliffs because they are not like rails, some cliffs can only be put on a special index
 - HARD **Manual Spawn Cliffs:** spawn the FPF cliffs on map, surrounding the furnace
 - HARD **Spawn Crater With Script:** this is the code of Abandoned Ruins mod, hopefully taking code shall be easy
-- HARD **Prevent Building:** the main idea is to build stuff around furnaces, not outside, if game engine allows then also implement it, not a big deal if Player wants to avoid this rule since power can always be delivered with poles.
 - EASY **Supplementary Burner Generator:** a simple generator for outposts since they also require power. SBG mod looks perfect for that, and it shall be part of this mod (I shall copy code of it)
 - EASY **Disable Power Options:** while in Factorio they have good use, in the Frostpunk theme they are absolutely cheating and against the idea of the theme. Steam Engine, Solar Panel and nuclear power (Nuclear Reactor, Steam Turbine, Heat Pipe, Heat Exchanger) shall be disabled. 
 - EASY **Abandoned Resources:** spawning a single furnace seems weird, maybe I should put some chests around furnace, and even turrets etc? like the Abandoned Ruins mod. if there shall be turrets then probably I need to define a new force which is enemy to player and ally to furnace force, maybe?
@@ -41,16 +41,29 @@ theme extension changes planned. below shall not be forced, but very recommended
 - EASY **Oil Cracking:** water recipes for oil processing and cracking shall be changed to steam
 - EASY **Enable Power Options:** although disabled, the player can enable the power options with this mod, will be a little cheaty but player defines if it is cheat or not
 
+below are fully hard to do stuff, maybe not so necessary. I will not focus on these for real, until to a point that I have time besides other stuff
+
+- HARD **Prevent Building:** the main idea is to build stuff around furnaces, not outside, if game engine allows then also implement it, not a big deal if Player wants to avoid this rule since power can always be delivered with poles.
+
 ### Done
 
 these are done and hopefully will not be broken
 
+- DONE **Random Spawn Furnace:** spawn a furnace on map, randomly, at initial area and also at map randomly
+- PARTIAL DONE **Clear Area Before Spawn:** this is the case where there are already many cliffs/trees/biters on the area we want to spawn furnace, a clearance is needed first but will not clear everything, only to enable furnace and maybe remnants. so far it worked very well, without any problem
 - DONE **Spawn Infrastructure:** infrastructure about where to spawn what is there, but not the spawning code
 - DONE **Check Furnace Distance:** furnaces should be spawned when reaches a certain distance, so I need to be able to understand how to get distances of two entities
 - DONE **Claim Tool:** all abandoned entities (furnaces etc) must be claimed by player before usage
 - DONE **Furnace Force:** all generated furnaces belong to this force so manipulation is easy
 - DONE **Unclaimed Furnace Activation:** prevent player leeching power from furnace without claim
 - DONE **Settings for Map Entity Generation:** furnace generation settingsm
+- DONE **Signals:** was not intended but the signals were there in unsorted so added them properly
+
+### Test
+
+test these and if they work then fine but if not then add fixes
+
+- **Skipping Spawn:** is this even possible? skipping a tick and spawning getting interrupted? if so then in next chunk generated the system should give a 1 as prob to compensate, would not balance but kind of a compensation
 
 ### Bugs
 

@@ -1,4 +1,10 @@
 data:extend({
+     {
+        type = "bool-setting",
+        name = "fpf-namedentities",
+        setting_type = "startup",
+        default_value = false,
+    },
     {
        type = "int-setting",
        name = "fpf-furnace-upgrade-power-max",
@@ -32,7 +38,7 @@ data:extend({
      {
         type = "bool-setting",
         name = "fpf-debug",
-        setting_type = "startup",
+        setting_type = "runtime-global",
         default_value = false,
     },
     {
