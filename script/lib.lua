@@ -47,7 +47,7 @@ local excludedSurfaces = { "beltlayer", "pipelayer", "Factory floor", "ControlRo
 local function dump_stats(msg)
   if settings.global["fpf-debug"].value then
     local baseMsg = "FPF[".. global.furnace_name .."/#" .. table_length(global.furnace_map) .. "/" .. global.furnace_power .. "MW/%" .. global.furnace_efficiency * 100 .. "] >> "
-    game.print({"", baseMsg .. msg })
+    dprint(baseMsg .. msg)
 
     for _, f in pairs(global.furnace_map) do
       if not f then 
@@ -226,15 +226,26 @@ local queue_furnace_spawn = function(chunkPos, surface, tick)
   end
 end
 
+-- spawn crater using furnace spawn
+local spawn_crater = function (furnaceSpawnInfo, furnace)
+  local fname = function(crater)
+    return crater.author .. "_" .. crater.name
+  end
+  local crater = findWithFunc(approvedCraters, fname, furnaceSpawnInfo.crater)
+
+  local craterForce = game.forces["neutral"]
+  spawning.spawn_crater(furnaceSpawnInfo.surface, craterForce, furnace.position, crater)
+end
+
 -- real spawning here, also check variance and minor ruins/entities besides furnace, maybe even ore etc...
-local spawn_furnace = function(furnaceSpawnInfo, tick)
+local spawn_furnace = function(furnaceSpawnInfo)
   if not furnaceSpawnInfo.spawn_complete then
     local result = spawning.spawn_furnace(10, furnaceSpawnInfo.surface, global.fpf_force, furnaceSpawnInfo.chunkPos, furnaceSpawnInfo.furnace_name )
     if result.res == 1 then
       if result.entity and result.entity.valid then 
         dprint( "generating done (" .. furnaceSpawnInfo.furnace_name .. ") at " .. furnaceSpawnInfo.chunkPos.x .."/" .. furnaceSpawnInfo.chunkPos.y .. ", surface: " .. furnaceSpawnInfo.surface.name )
         furnaceSpawnInfo.spawn_complete = true
-        -- TODO -- spawn crater and register its name to furnaceSpawnInfo
+        spawn_crater(furnaceSpawnInfo, result.entity)
       else
         dprint( "attempt gave good response but no entity" )
       end
@@ -374,7 +385,7 @@ local on_tick = function (event)
   if not furnaceSpawnInfo then return end
   
   if not furnaceSpawnInfo.spawn_complete then 
-    spawn_furnace(furnaceSpawnInfo, event.tick)
+    spawn_furnace(furnaceSpawnInfo)
   end
 
   global.furnace_spawn_queue[event.tick] = nil
@@ -393,14 +404,32 @@ local spawn_furnace_command = function (command)
     return
   end
 
+  local craterName = arg.crater
+  if not craterName then 
+    local rand = math.random(#approvedCraters)
+    craterName = approvedCraters[rand].name
+  else
+    local fname = function(crater)
+      return crater.author .. "_" .. crater.name
+    end
+
+    local crater = findWithFunc(approvedCraters, fname, craterName)
+    if not crater then 
+      game.print{"command-output.fpf-spawn-furnace-crater-not-found"}
+      return
+    end
+  end
+
+
   local myarg = {
     chunkPos = arg.chunkPos or {x=0, y=0},
     surface = surface,
     furnace_name = arg.furnace_name or global.furnace_name,
-    spawn_complete = false
+    spawn_complete = false,
+    crater = craterName
   }
 
-  spawn_furnace(myarg, command.tick +1) 
+  spawn_furnace(myarg) 
 end
 
 -- force replace furnaces to current one
@@ -647,15 +676,18 @@ local self_init = function()
 end
 
 lib.on_init = function()
+  dprint("on_init")
   defaults()
   self_init()
 end
   
 lib.on_configuration_changed = function ()
+  dprint("on_configuration_changed")
   self_init()
 end
 
 lib.on_load = function()
+  dprint("on_load")
   defaults()
 end
 

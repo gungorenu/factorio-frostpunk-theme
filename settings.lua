@@ -41,6 +41,12 @@ data:extend({
         setting_type = "runtime-global",
         default_value = false,
     },
+     {
+        type = "bool-setting",
+        name = "fpf-logging",
+        setting_type = "runtime-global",
+        default_value = false,
+    },
     {
         type = "int-setting",
         name = "fpf-furnace-spawn-baserate",

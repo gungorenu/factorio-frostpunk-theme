@@ -25,10 +25,23 @@ function get_chunk_center (chunkPos, modx, mody)
   return {x= chunkPos.x * 32 + 16 + (modx or 0), y = chunkPos.y * 32 - 16 + (mody or 0)}
 end
 
--- dump print
+-- dump print, also logs
 function dprint(msg)
-  if settings.global["fpf-debug"].value then
-    game.print({"", msg })
+  if game then 
+    if settings.global["fpf-debug"].value then
+      game.print({"", msg })
+    end
+    
+    lprint(msg)
+  end
+end
+
+-- log print
+function lprint(msg)
+  if game then 
+    if settings.global["fpf-logging"].value then
+      game.write_file("fpf-logs.txt", { "", msg .. "\r\n" }, true)
+    end
   end
 end
 
@@ -42,3 +55,12 @@ function table_first(T)
   return nil
 end
  
+-- find with function
+function findWithFunc(table, fname, name)
+  for _,v in pairs(table) do 
+    if v and fname(v) == name then 
+      return v
+    end
+  end
+  return nil
+end

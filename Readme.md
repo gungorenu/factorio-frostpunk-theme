@@ -25,8 +25,7 @@ general priority is the item order seen here
 
 todo list for the mod
 
-- HARD **Manual Spawn Cliffs:** spawn the FPF cliffs on map, surrounding the furnace
-- HARD **Spawn Crater With Script:** this is the code of Abandoned Ruins mod, hopefully taking code shall be easy
+- HARD **OnChunk Build Queue:** this is the solution to the bug about built stuff being overwritten
 - EASY **Supplementary Burner Generator:** a simple generator for outposts since they also require power. SBG mod looks perfect for that, and it shall be part of this mod (I shall copy code of it)
 - EASY **Disable Power Options:** while in Factorio they have good use, in the Frostpunk theme they are absolutely cheating and against the idea of the theme. Steam Engine, Solar Panel and nuclear power (Nuclear Reactor, Steam Turbine, Heat Pipe, Heat Exchanger) shall be disabled. 
 - EASY **Abandoned Resources:** spawning a single furnace seems weird, maybe I should put some chests around furnace, and even turrets etc? like the Abandoned Ruins mod. if there shall be turrets then probably I need to define a new force which is enemy to player and ally to furnace force, maybe?
@@ -48,6 +47,8 @@ below are fully hard to do stuff, maybe not so necessary. I will not focus on th
 
 these are done and hopefully will not be broken
 
+- DONE **Manual Spawn Cliffs:** spawn the FPF cliffs on map, surrounding the furnace
+- PARTIAL DONE **Spawn Crater With Script:** this is the code of Abandoned Ruins mod, hopefully taking code shall be easy
 - DONE **Define Cliff Maps:** the definition was not so difficult. hopefully it can be used to spawn but it seems doable since I read what is in the game 
 - DONE **Random Spawn Furnace:** spawn a furnace on map, randomly, at initial area and also at map randomly
 - PARTIAL DONE **Clear Area Before Spawn:** this is the case where there are already many cliffs/trees/biters on the area we want to spawn furnace, a clearance is needed first but will not clear everything, only to enable furnace and maybe remnants. so far it worked very well, without any problem
@@ -56,7 +57,7 @@ these are done and hopefully will not be broken
 - DONE **Claim Tool:** all abandoned entities (furnaces etc) must be claimed by player before usage
 - DONE **Furnace Force:** all generated furnaces belong to this force so manipulation is easy
 - DONE **Unclaimed Furnace Activation:** prevent player leeching power from furnace without claim
-- DONE **Settings for Map Entity Generation:** furnace generation settingsm
+- DONE **Settings for Map Entity Generation:** furnace generation settings
 - DONE **Signals:** was not intended but the signals were there in unsorted so added them properly
 
 ### Test
@@ -69,7 +70,8 @@ test these and if they work then fine but if not then add fixes
 
 some issues I created somehow or realized I need to fix
 
-- FIXED? **Pollution:** early (non-upgraded) furnaces have very low pollution. 20 boiler, 40 steam engine produces pollution 600/m with 36MW, furnace will do 480 at 48MW, and a lot lower on lower power or with efficiency upgrades
+- FIXED **Pollution:** early (non-upgraded) furnaces have very low pollution. 20 boiler, 40 steam engine produces pollution 600/m with 36MW, furnace will do 480 at 48MW, and a lot lower on lower power or with efficiency upgrades
+- **Pre-Chunk Generation Building:** this is a serious issue. when a furnace is about to be built, code simply rushes forward and builds everything including crater but on un-generated chunks. this behavior causes game re-applying or even re-generating chunks and overwriting the cliffs built etc. so basically a pre-built crater will be overwritten within seconds later. the solution would be to wait until the needed chunks are generated or queue it, and when AFTER chunk is generated then the other stuff can be build, including clearing etc. chunk generation is observable and entity creating is queue-able so it shall not be a big problem I hope
 
 ## Won't Work
 
