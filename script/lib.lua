@@ -20,7 +20,7 @@ local furnaceSpawnProbPerChunk = settings.global["fpf-furnace-spawn-rateincremen
 -- entry >> [ entity.unit_number ] = entity
 -- entry >> destroyed/removed entities are removed from this list
 -- global.furnace_history = {}, -- custom data, all furnaces, including destroyed ones
--- entry >> [ position as "x/y" ] = { position = {x, y}, initial = furnace type name (will not be updated), claimed = boolean, dead = boolean }
+-- entry >> [ position as "x/y" ] = { position = {x, y}, initial = furnace type name (will not be updated), claimed = boolean, dead = boolean, crater = crater used, fullname }
 -- entry >> all entries are here, even destroyed, and spawn check shall use this, not the furnace_map
 -- global.furnace_power = 12, -- starting in MW
 -- global.furnace_efficiency = 1, -- starting in %, *100
@@ -33,6 +33,12 @@ local furnaceSpawnProbPerChunk = settings.global["fpf-furnace-spawn-rateincremen
 
 -- map center
 local mapCenter = get_chunk_center({x=0, y=0})
+
+-- non global stuff
+-- list of known craters
+-- entry >> crater definition has a special format
+local approvedCraters = require("craterdata")
+local excludedSurfaces = { "beltlayer", "pipelayer", "Factory floor", "ControlRoom" }
 
 -------------------------------------------------------------------------------------------------------------------------------
 ---- Development Stuff --------------------------------------------------------------------------------------------------------
@@ -208,20 +214,27 @@ end
 local queue_furnace_spawn = function(chunkPos, surface, tick)
   local processing_tick = tick + 1
   if not global.furnace_spawn_queue[processing_tick] then
-    global.furnace_spawn_queue[processing_tick] = { chunkPos = chunkPos, surface = surface, force = global.fpf_force, furnace_name = global.furnace_name, spawn_complete = false } 
+
+    local rand = math.random(#approvedCraters)
+    local crater = approvedCraters[rand]
+    if not crater then 
+      dprint( "crater not found")
+      return
+    end
+
+    global.furnace_spawn_queue[processing_tick] = { chunkPos = chunkPos, surface = surface, force = global.fpf_force, furnace_name = global.furnace_name, spawn_complete = false, crater = crater.author .. "_" .. crater.name } 
   end
 end
 
 -- real spawning here, also check variance and minor ruins/entities besides furnace, maybe even ore etc...
 local spawn_furnace = function(furnaceSpawnInfo, tick)
   if not furnaceSpawnInfo.spawn_complete then
-    -- TODO -- spawn furnace and its crater
-
     local result = spawning.spawn_furnace(10, furnaceSpawnInfo.surface, global.fpf_force, furnaceSpawnInfo.chunkPos, furnaceSpawnInfo.furnace_name )
     if result.res == 1 then
       if result.entity and result.entity.valid then 
         dprint( "generating done (" .. furnaceSpawnInfo.furnace_name .. ") at " .. furnaceSpawnInfo.chunkPos.x .."/" .. furnaceSpawnInfo.chunkPos.y .. ", surface: " .. furnaceSpawnInfo.surface.name )
         furnaceSpawnInfo.spawn_complete = true
+        -- TODO -- spawn crater and register its name to furnaceSpawnInfo
       else
         dprint( "attempt gave good response but no entity" )
       end
@@ -243,7 +256,14 @@ local first_furnace_spawn = function (surface, force)
   chunkPos.y = math.floor(sin * radius / 32)
   chunkPos.x = math.floor(cos * radius / 32)
 
-  local result = { chunkPos = chunkPos, surface = surface, force = force, furnace_name = global.furnace_name, spawn_complete = false }
+  local rand = math.random(#approvedCraters)
+  local crater = approvedCraters[rand]
+  if not crater then 
+    dprint( "crater not found")
+    return
+  end
+
+  local result = { chunkPos = chunkPos, surface = surface, force = force, furnace_name = global.furnace_name, spawn_complete = false, crater = crater.author .. "_" .. crater.name }
   return result
 end
 
@@ -305,6 +325,8 @@ end
 
 -- on chunk generated
 local on_chunk_generated = function (event)
+  if excludedSurfaces[event.surface.name] then return end
+
   global.chunks_checked = global.chunks_checked +1
   local spawnChance = get_furnace_spawn_chance(event.position)
   local prob = math.random()
@@ -367,7 +389,7 @@ local spawn_furnace_command = function (command)
   local arg = f()
   local surface = game.surfaces[arg.surface or game.players[command.player_index].surface.name ]
   if not surface then 
-    game.print{ "" .. "surface not known"}
+    game.print{"command-output.fpf-spawn-furnace-surface-not-found"}
     return
   end
 
@@ -385,7 +407,7 @@ end
 local replace_furnaces_command = function(command)
   local furnaceType = game.entity_prototypes[command.parameter or "fpf-furnace-0"]
   if not furnaceType then 
-    game.print{ "" .. "furnace type not known"}
+    game.print{ "command-output.fpf-spawn-furnace-type-unknown"}
     return
   end
 
@@ -400,9 +422,167 @@ local replace_furnaces_command = function(command)
   end
 end
 
+-- reads a creater (cliffs) from map and then outputs to a file
+local read_crater = function (command)
+  local f = loadstring("return " .. command.parameter)
+  local arg = f()
+  local name = arg.name
+  local radius = arg.radius
+  local version = arg.version or "0"
+
+  if not name then
+    game.print{ "command-output.fpf-read-crater-no-name"}
+    return
+  end
+
+  if not radius then
+    game.print{ "command-output.fpf-read-crater-no-radius" }
+    return
+  end
+
+  if radius < 64 then
+    game.print{ "command-output.fpf-read-crater-low-radius"}
+    return
+  end
+
+  local variance = arg.variance or { north=0, south=0, west=0, east=0 }
+  local author = game.players[command.player_index].name
+  local surface = game.players[command.player_index].surface
+  local pos = game.players[command.player_index].position
+
+  local area = { 
+    left_top = { 
+      x = pos.x-16, 
+      y = pos.y-16
+    },
+    right_bottom = {
+      x = pos.x+16, 
+      y = pos.y+16
+    }
+  }
+
+  -- find the closest wooden chest
+  local temp = surface.find_entities_filtered{ 
+    area = area, 
+    name = "wooden-chest",
+    type= "container",
+    force = game.players[command.player_index].force,
+    limit = 1
+  }
+
+  if not temp then 
+    game.print{ "command-output.fpf-read-crater-no-reference"}
+    return
+  end
+
+  temp = table_first(temp)
+  if not temp then 
+    game.print{ "command-output.fpf-read-crater-reference-empty"}
+    return
+  end
+
+  if not temp.valid then
+    game.print{ "command-output.fpf-read-crater-reference-invalid"}
+    return
+  end
+
+  -- we found the wooden chest, so now is the time to find cliffs within radius
+  local reference = temp.position
+  local cliffs = surface.find_entities_filtered{ 
+    position = temp.position,
+    radius = radius,
+    type= "cliff"
+  }
+
+  -- starting the file writing
+  local filename = author .. "_" .. name .. ".lua"
+  game.write_file(filename, { "", "-- generated by " .. author .. "\r\n" } , false, command.player_index)
+  local wf = function(msg)
+    game.write_file(filename, { "", msg .. "\r\n" }, true, command.player_index)
+  end
+
+  wf( "local crater = {")
+  wf( "  name = \"" .. name .. "\",")
+  wf( "  author = \"" .. author .. "\",")
+  wf( "  version = \"" .. version .. "\",")
+  wf( "  variance = {")
+  wf( "    north = " .. (variance.north or 0) .. ", ")
+  wf( "    east = " .. (variance.east or 0) .. ", ")
+  wf( "    south = " .. (variance.south or 0) .. ", ")
+  wf( "    west = " .. (variance.west or 0) .. ", ")
+  wf( "  },")
+  wf( "  cliffs = {")
+
+  -- cliff section, also calculates the radius here
+  local minx = reference.x
+  local maxx = reference.x
+  local miny = reference.y
+  local maxy = reference.y
+  for _, cliff in pairs (cliffs) do
+    pos = { x = cliff.position.x - reference.x + 0.5, y = cliff.position.y - reference.y -0.5 }
+    wf("    { x = " .. pos.x .. ", y = " .. pos.y .. ", orientation = \"" .. cliff.cliff_orientation  .. "\" }," )
+    if cliff.position.x < minx then minx = cliff.position.x end
+    if cliff.position.x > maxx then maxx = cliff.position.x end
+    if cliff.position.y < miny then miny = cliff.position.y end
+    if cliff.position.y > maxy then maxy = cliff.position.y end
+  end
+  wf( "  },")
+ 
+  game.print({ "command-output.fpf-read-crater-range", minx, maxx, miny, maxy} )
+
+  -- find center of area
+  local center = { x = maxx - (maxx - minx) /2, y = maxy - (maxy - miny)/2 }
+  -- we found center of crater, now check radius (max distance) for all cliffs again
+  local radius =0
+  for _, cliff in pairs (cliffs) do
+    pos = {x = cliff.position.x, y = cliff.position.y}
+    local dis = get_distance(center, pos)
+    if dis > radius then radius = dis end
+  end
+  radius = math.floor(radius +8) -- add some slack
+
+  -- add center and radius
+  game.print({ "command-output.fpf-read-crater-center", center.x, center.y, radius})
+  wf( "  clearance = {")
+  wf( "    center = { x = " .. math.floor(center.x - reference.x) .. ", y = " .. math.floor(center.y - reference.y) .. "},")
+  wf( "    radius = " .. radius .. ",")
+  wf( "    box = { ")
+  wf( "      left_top = { x = " .. math.floor(minx - reference.x - 8 ) .. ", y = " .. math.floor(miny - reference.y - 8 ) .. " },")
+  wf( "      right_bottom = { x = " .. math.floor(maxx - reference.x + 8 ) .. ", y = " .. math.floor(maxy - reference.y + 8 ) .. " }")
+  wf( "    }")
+  wf( "  }")
+  wf( "}")
+  wf( "return crater")
+
+  game.print({ "command-output.fpf-read-crater-done", filename})
+end
+
+-- gives information about the nearby furnace
+local give_furnace_info = function (command)
+  local surface = game.players[command.player_index].surface
+  local entities = surface.find_entities_filtered{ 
+    position = game.players[command.player_index].position, 
+    radius = 32,
+    type= "burner-generator",
+  }
+
+  for _, entity in pairs (entities) do
+    if entity and entity.valid and entity.name:find("fpf%-furnace%-") then
+      local id = entity.position.x .. "/" .. entity.position.y
+      local furnaceInfo = global.furnace_history[id]
+      if furnaceInfo then
+        game.print{ "command-output.fpf-furnaceinfo-command", entity.position.x, entity.position.y, entity.name, furnaceInfo.claimed, (furnaceInfo.crater or "nil") }
+        return
+      end
+    end
+  end
+end
+
 -- register commands
-commands.add_command("fpf_spawn_furnace", "spawns a furnace at specified chunk. expects arg: { chunkPos = <position of chunk, {x = #, y = #} >, surface = <surface name, nil for player surface>, furnace_name = <name of furnace if set, or nil for default one> } ", spawn_furnace_command )
-commands.add_command("fpf_replace_furnaces", "replaces all furnaces to mentioned type. expects arg: furnace entity type name or empty for current one", replace_furnaces_command )
+commands.add_command("fpf-spawn-furnace", {"command-help.fpf-spawn-furnace"}, spawn_furnace_command )
+commands.add_command("fpf-replace-furnaces", {"command-help.fpf-replace-furnaces"} , replace_furnaces_command )
+commands.add_command("fpf-read-crater", {"command-help.fpf-read-crater"}, read_crater )
+commands.add_command("fpf-furnace-info", {"command-help.fpf-furnace-info"}, give_furnace_info )
 
 -------------------------------------------------------------------------------------------------------------------------------
 ---- Library Registration -----------------------------------------------------------------------------------------------------

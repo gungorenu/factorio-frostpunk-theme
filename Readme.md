@@ -14,10 +14,10 @@ biters could be one challenge but not necessary since power is a challenge now
 
 the mod shall put dependency on some mods on mod portal since the ambiance fits a lot.
 
-- *Big Winter:* (**mandatory**) almost absolute must. there is a problem with the mod though. it must prevent water generation for now, and mod provides this with option. either mod shall be replicated inside this mod or leave as an option which might fail in various places. not decided yet.
-- *Ice Ore:* (**mandatory**) since water shall not be around map (no lake, all supposed to be frozen), this mod shall be source of the water
-- *Cold Biters:* (**optional**) while it makes very good sense, it is not a must. might change
-- *Theme Extensions:* (**optional**) this shall be a supplementary mod over this mod, and it shall change some rules of the game to make it more Frostpunk like
+- **Big Winter:** (*mandatory*) almost absolute must. there is a problem with the mod though. it must prevent water generation for now, and mod provides this with option. either mod shall be replicated inside this mod or leave as an option which might fail in various places. not decided yet.
+- **Ice Ore:** (*mandatory*) since water shall not be around map (no lake, all supposed to be frozen), this mod shall be source of the water
+- **Cold Biters:** (*optional*) while it makes very good sense, it is not a must. might change
+- **Theme Extensions:** (*optional*) this shall be a supplementary mod over this mod, and it shall change some rules of the game to make it more Frostpunk like
 
 ## TODO
 
@@ -25,7 +25,6 @@ general priority is the item order seen here
 
 todo list for the mod
 
-- HARD **Define Cliff Maps:** this is the hardest part. first I need to make a cliff pattern and then make it spawn-able through a script. another problem is how to define and align the cliffs because they are not like rails, some cliffs can only be put on a special index
 - HARD **Manual Spawn Cliffs:** spawn the FPF cliffs on map, surrounding the furnace
 - HARD **Spawn Crater With Script:** this is the code of Abandoned Ruins mod, hopefully taking code shall be easy
 - EASY **Supplementary Burner Generator:** a simple generator for outposts since they also require power. SBG mod looks perfect for that, and it shall be part of this mod (I shall copy code of it)
@@ -49,6 +48,7 @@ below are fully hard to do stuff, maybe not so necessary. I will not focus on th
 
 these are done and hopefully will not be broken
 
+- DONE **Define Cliff Maps:** the definition was not so difficult. hopefully it can be used to spawn but it seems doable since I read what is in the game 
 - DONE **Random Spawn Furnace:** spawn a furnace on map, randomly, at initial area and also at map randomly
 - PARTIAL DONE **Clear Area Before Spawn:** this is the case where there are already many cliffs/trees/biters on the area we want to spawn furnace, a clearance is needed first but will not clear everything, only to enable furnace and maybe remnants. so far it worked very well, without any problem
 - DONE **Spawn Infrastructure:** infrastructure about where to spawn what is there, but not the spawning code

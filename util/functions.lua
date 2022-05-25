@@ -32,3 +32,13 @@ function dprint(msg)
   end
 end
 
+-- first in table
+function table_first(T)
+  for _,v in pairs(T) do 
+    if v then 
+      return v
+    end
+  end
+  return nil
+end
+ 
