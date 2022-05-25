@@ -116,3 +116,11 @@ some mods are mentioned besides above list. they are either not used for coding 
 # Help
 
 want to help? contact me, I cannot do everything above or it shall take a long time. also I am not an experienced modder.
+
+# Resources
+
+links etc: 
+
+- [Prototypes](https://wiki.factorio.com/Prototype_definitions)
+- [Abandoned Ruins](https://github.com/Bilka2/AbandonedRuins)
+- [Factorio Lua](https://lua-api.factorio.com/latest/)
