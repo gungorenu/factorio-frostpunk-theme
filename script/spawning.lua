@@ -1,3 +1,6 @@
+local fposition = require("./util/position")
+local ftable = require("./util/table")
+
 -- source : https://github.com/Bilka2/AbandonedRuins/blob/master/spawning.lua
 -- credits go to Bilka2
 
@@ -24,30 +27,42 @@ cliffVariations["none-to-west"]   = 2
 cliffVariations["south-to-none"]  = 2
 cliffVariations["none-to-north"]  = 2
 
+local cliffOrientationMatrix = {}
+cliffOrientationMatrix["west-to-east"]   = "east-to-west"
+cliffOrientationMatrix["north-to-south"] = "south-to-north"
+cliffOrientationMatrix["east-to-west"]   = "west-to-east"
+cliffOrientationMatrix["south-to-north"] = "north-to-south"
+cliffOrientationMatrix["west-to-north"]  = "south-to-east"
+cliffOrientationMatrix["north-to-east"]  = "west-to-south"
+cliffOrientationMatrix["east-to-south"]  = "north-to-west"
+cliffOrientationMatrix["south-to-west"]  = "east-to-north"
+cliffOrientationMatrix["west-to-south"]  = "north-to-east"
+cliffOrientationMatrix["north-to-west"]  = "east-to-south"
+cliffOrientationMatrix["east-to-north"]  = "south-to-west"
+cliffOrientationMatrix["south-to-east"]  = "west-to-north"
+cliffOrientationMatrix["west-to-none"]   = "none-to-east"
+cliffOrientationMatrix["none-to-east"]   = "west-to-none"
+cliffOrientationMatrix["north-to-none"]  = "none-to-south"
+cliffOrientationMatrix["none-to-south"]  = "north-to-none"
+cliffOrientationMatrix["east-to-none"]   = "none-to-west"
+cliffOrientationMatrix["none-to-west"]   = "east-to-none"
+cliffOrientationMatrix["south-to-none"]  = "none-to-north"
+cliffOrientationMatrix["none-to-north"]  = "south-to-none"
+
+local function is_orientation_matching(expected, current)
+  if expected == current then return true end
+  if cliffOrientationMatrix[expected] == current then return true end
+  return false 
+end
+
 -- attempt to clear area
-local function clear_area(area, surface, skipforce)
+local function clear_entities_of_area(area, surface)
   -- exclude tiles that we shouldn't spawn on
   if surface.count_tiles_filtered{ area = area, limit = 1, collision_mask = {"item-layer", "object-layer"} } == 1 then
     return false
   end
 
   for _, entity in pairs(surface.find_entities_filtered({area = area, type = {"resource"}, invert = true})) do
-    if entity.valid and entity.type ~= "tree" and entity.force ~= skipforce then
-      entity.destroy({do_cliff_correction = true, raise_destroy = true})
-    end
-  end
-
-  return true
-end
-
--- clear cliffs
-local function clear_cliffs(area, surface)
-  -- exclude tiles that we shouldn't spawn on
-  if surface.count_tiles_filtered{ area = area, limit = 1, collision_mask = {"item-layer", "object-layer"} } == 1 then
-    return false
-  end
-
-  for _, entity in pairs(surface.find_entities_filtered({area = area, type = {"cliff"}})) do
     if entity.valid then
       entity.destroy({do_cliff_correction = true, raise_destroy = false})
     end
@@ -56,111 +71,192 @@ local function clear_cliffs(area, surface)
   return true
 end
 
--- spawns a single entity, but also tries to place it if it cannot do it in first try
--- returns tuple: entity / res. if res >0 then entity is valid
-local function spawn_special_entity(try, surface, force, pos, entityName, sizexy)
+-- clear cliffs of area
+local function clear_cliffs_of_area(area, surface, cliffCorrection)
+  -- exclude tiles that we shouldn't spawn on
+  if surface.count_tiles_filtered{ area = area, limit = 1, collision_mask = {"item-layer", "object-layer"} } == 1 then
+    return false
+  end
+
+  for _, entity in pairs(surface.find_entities_filtered({area = area, type = {"cliff"}})) do
+    if entity.valid and entity.destructible then
+      entity.destroy({do_cliff_correction = cliffCorrection, raise_destroy = false})
+    end
+  end
+
+  return true
+end
+
+local function spawn_cliff (surface, force, cliffInfo, isCorrection)
+  local e = surface.create_entity {
+    name = "fpf-cliff",
+    position = cliffInfo.position,
+    force = force,
+    raise_built = false,
+    create_build_effect_smoke = false,
+    cliff_orientation = cliffInfo.orientation
+  }
+
+  if not e then
+    dprint( "cliff creation failed @" .. cliffInfo.position.x .. "/" .. cliffInfo.position.y  )
+  elseif not e.valid then 
+    dprint( "cliff created but invalid @" .. cliffInfo.position.x .. "/" .. cliffInfo.position.y  )
+  else
+    e.destructible = false
+    e.graphics_variation = cliffInfo.variation
+  end
+
+  return true
+end
+
+local function spawn_furnace (position, surface, force, entityName)
   if not game.entity_prototypes[entityName] then
     return { res =-1 }
   end
+  local area = { 
+    left_top = fposition.shift(position, -4.5), 
+    right_bottom = fposition.shift (position, 4.5) 
+  }
+  clear_entities_of_area(area, surface, force)
 
-  for i =0, try, 1 do 
-    local posvariance = { x = pos.x + i * 3, y = pos.y + i *3 }
-    -- can we place entity? if not lets clear once
-    if not surface.can_place_entity{ name = entityName, position= posvariance, force = force, build_check_type = defines.build_check_type.script } then
-      local area = { left_top = { x = posvariance -sizexy, y = posvariance - sizexy } , right_bottom = { x = posvariance +sizexy, y = posvariance +sizexy }}
-      clear_area(area, surface, force)
-    end
+ -- can we place entity? if not then we continue loop
+  if surface.can_place_entity{ name = entityName, position= position, force = force, build_check_type = defines.build_check_type.script } then
+    local e = surface.create_entity
+    {
+      name = entityName,
+      position = position,
+      force = force,
+      raise_built = true,
+      create_build_effect_smoke = false,
+    }
+   e.health = math.random(game.entity_prototypes[entityName].max_health)
+   return { entity = e, res =1 }
+  end
+end
 
-    -- can we place entity? if not then we continue loop
-    if surface.can_place_entity{ name = entityName, position= posvariance, force = force, build_check_type = defines.build_check_type.script } then
-      local e = surface.create_entity
-      {
-        name = entityName,
-        position = posvariance,
-        force = force,
-        raise_built = true,
-        create_build_effect_smoke = false,
-      }
+local function calculateAlignment(position, first)
+  local pos = fposition.shift(position, -0.5)
+  pos = fposition.recoordinate(pos, { x =first.x, y = first.y - 0.5 } )
+  lprint("alignment initial is at " .. pos.x .. "/" .. pos.y )
 
-      e.health = math.random(game.entity_prototypes[entityName].max_health)
-
-      return { entity = e, res =1 }
-    end
+  -- x alignment 
+  local rem = pos.x %4
+  if rem == 1 then
+    pos.x = pos.x +1
+  elseif rem == 3 then
+    pos.x = pos.x -1
+  elseif rem == 0 then 
+    pos.x = pos.x +2
   end
 
-  return { res =-2 }
+  -- y alignment
+  rem = pos.y %4
+  if rem == 1 then
+    pos.y = pos.y +1
+  elseif rem == 3 then
+    pos.y = pos.y -1
+  elseif rem == 0 then 
+    pos.y = pos.y +2
+  end
+
+  -- y always has 0.5 more
+  pos.y = pos.y +0.5
+  local alignmentPos = { x = pos.x - first.x, y = pos.y - first.y }
+
+  lprint("alignment is done at " .. alignmentPos.x .. "/" .. alignmentPos.y .. " using " .. first.x .. "/" .. first.y .. " making first cliff at : " .. pos.x .. "/" .. pos.y )
+  return alignmentPos
 end
 
--- spawn furnace, only furnace
--- returns tuple: entity / res. if res >0 then entity is valid
-local function spawn_furnace (try, surface, force, chunkPos, furnaceType)
-  if not surface.valid then return { res = -1 } end
-
-  -- furnace center point has 0.5 modifier
-  local pos = get_chunk_center(chunkPos, math.random(16) + 0.5, math.random(16) + 0.5)
-  return spawn_special_entity(try, surface, force, pos, furnaceType, 4.5)
-end
-
--- make copy of area
-local copy_area = function (area, mod)
-  return {
-    left_top = {
-      x = area.left_top.x + (mod.x or 0), 
-      y = area.left_top.y + (mod.y or 0), 
-    },
-    right_bottom = {
-      x = area.right_bottom.x + (mod.x or 0), 
-      y = area.right_bottom.y + (mod.y or 0), 
-    }
-  }
-end
-
--- spawn crater, furnace must be created before
-local function spawn_crater (surface, force, furnacePos, craterDef)
-  if not surface.valid then return -1 end
-
-  dprint( "attempt of crater spawning: ".. craterDef.name .. "@" .. craterDef.author )
+local function crater_chunks (furnaceInfo)
+  -- calculate the random direction to shift 
+  local dir = math.random(4)
+  local reference = { x =0, y =0 }
+  local position = { x = furnaceInfo.position.x, y = furnaceInfo.position.y }
   
-  -- clear area
-  -- still not decided what to cleanup but first use boxed area
+  -- directions are reversed, this is not furnace direction, we move crater
+  if dir == 1 and furnaceInfo.crater.variance.north >0 then
+    position = fposition.recoordinate( position, { x=0, y = 1 * math.random(furnaceInfo.crater.variance.north) } )
+  end
+  if dir == 2 and furnaceInfo.crater.variance.east >0 then 
+    position = fposition.recoordinate( position, { y=0, x = -1 * math.random(furnaceInfo.crater.variance.east) } )
+  end
+  if dir == 3 and furnaceInfo.crater.variance.south >0 then
+    position = fposition.recoordinate( position, { x=0, y = -1 * math.random(furnaceInfo.crater.variance.south) } )
+  end
+  if dir == 4 and furnaceInfo.crater.variance.west >0 then
+    position = fposition.recoordinate( position, { y=0, x = math.random(furnaceInfo.crater.variance.west) } )
+  end
 
-  local area = copy_area(craterDef.clearance.box, furnacePos)
-  if not clear_cliffs(area, surface) then return -2 end
-  dprint( "crater cleaning done at: ".. area.left_top.x .. "/" .. area.left_top.y .. " to " .. area.right_bottom.x .. "/" .. area.right_bottom.y )
+  -- this position has to conform some special rules so we have to make it fit a zone that cliffs can be put at
+  -- the first cliff has to be on 2X / 2X.5 position in which X is odd number, so the positions (2X) should not be able to be divided by 4 
+  -- just aligning with 2 does not fix the problem, we have to move
+  local first = ftable.first(furnaceInfo.crater.cliffs) 
+  local alignmentPos = calculateAlignment(position, first)
 
-  -- now we have to calculate reference point first, using variance and entity position
-  local modifier = {x = 2* math.floor(furnacePos.x/2), y = 2* math.floor(furnacePos.y/2) }
-  -- TODO: -- skip variance for now
+  local chunks = {}
 
   -- cliff ref position, should be 
-  for _, cl in pairs(craterDef.cliffs) do
-    local pos = { x = cl.x + modifier.x, y = cl.y + modifier.y }
+  for _, cl in pairs(furnaceInfo.crater.cliffs) do
+    pos =  fposition.recoordinate(alignmentPos, { x =cl.x, y = cl.y } )
+    local chunkId = fposition.chunk_id(pos)
+    local chunkData = chunks[chunkId] or {
+      position = fposition.chunk(pos),
+      entities = {}
+    }
 
+    for _, orientation in pairs(cl.cliffs) do
+      table.insert(chunkData.entities, {
+        position = pos,
+        orientation = orientation,
+        variation = math.random(cliffVariations[orientation])
+      })
+    end
+    
+    chunks[chunkId] = chunkData
+  end
+
+  return chunks
+end
+
+local function spawn_crater (cliffChunk, surface, force)
+
+  local area = fposition.chunk_area(cliffChunk.position)
+  clear_cliffs_of_area(area, surface, false)
+
+  for _, cl in pairs(cliffChunk.entities) do
     local e = surface.create_entity {
-      name = "cliff",
-      position = pos,
+      name = "fpf-cliff",
+      position = cl.position,
       force = force,
       raise_built = false,
       create_build_effect_smoke = false,
       cliff_orientation = cl.orientation
     }
-
+  
     if not e then
-      dprint( "cliff creation failed @" .. pos.x .. "/" .. pos.y  )
+      dprint( "cliff creation failed @" .. cl.position.x .. "/" .. cl.position.y  )
     elseif not e.valid then 
-      dprint( "cliff created but invalid @" .. pos.x .. "/" .. pos.y  )
+      dprint( "cliff created but invalid @" .. cl.position.x .. "/" .. cl.position.y  )
     else
       e.destructible = false
-      e.graphics_variation = math.random(cliffVariations[cl.orientation])
+      e.graphics_variation = cl.variation
     end
   end
-
-  return 1
 end
 
+local function clear_crater (clearance, reference, surface)
+  local left_top = fposition.recoordinate(reference, clearance.box.left_top)
+  local right_bottom = fposition.recoordinate(reference, clearance.box.right_bottom)
+  clear_cliffs_of_area( {left_top, right_bottom}, surface, true )
+end
 
--- spawn functions
+----
+
 local spawning = {}
-spawning.spawn_furnace = spawn_furnace
-spawning.spawn_crater = spawn_crater
+spawning.spawn_furnace = spawn_furnace -- position, surface, force, entityName : spawn furnace at position using surface and force, also clears area of furnace
+spawning.crater_chunks = crater_chunks -- furnaceInfo : calculates the chunk list where the crater cliffs are supposed to be spawned at
+spawning.spawn_crater = spawn_crater -- cliffChunk, surface, force : spawn cliffs/entities of the given chunk cliff info
+spawning.clear_crater = clear_crater -- clearance, reference, surface : clears the clearance area of crater from cliffs with reference to given point
+spawning.spawn_cliff = spawn_cliff -- position, surface, force, orientation, isCorrection : can spawn a cliff at specified position, and can also remove entities at previous location
+spawning.is_orientation_matching = is_orientation_matching -- expected, current : checks two cliff orientation, including alternating directions
 return spawning

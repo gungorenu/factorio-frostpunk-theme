@@ -3,6 +3,8 @@
 
 require("./util/functions")
 require("./prototype/furnace/furnace_functions")
+local fposition = require("./util/position")
+local ftable = require("./util/table")
 local spawning = require("spawning")
 
 -------------------------------------------------------------------------------------------------------------------------------
@@ -14,82 +16,70 @@ local furnaceEffUpgrade = settings.startup["fpf-furnace-upgrade-eff-upgrade"].va
 local furnaceSpawnBaseRate = settings.global["fpf-furnace-spawn-baserate"].value
 local furnaceSpawnMinDistance = settings.global["fpf-furnace-spawn-mindistance"].value
 local furnaceSpawnProbPerChunk = settings.global["fpf-furnace-spawn-rateincrement-perchunk"].value
+local furnaceSpawning = settings.global["fpf-furnace-spawning"].value -- disables spawning of furnaces, basically disables the mod
 
--- mod state info
--- global.furnace_map = {}, -- any spawned furnace shall be put here, not only claimed
--- entry >> [ entity.unit_number ] = entity
--- entry >> destroyed/removed entities are removed from this list
--- global.furnace_history = {}, -- custom data, all furnaces, including destroyed ones
--- entry >> [ position as "x/y" ] = { position = {x, y}, initial = furnace type name (will not be updated), claimed = boolean, dead = boolean, crater = crater used, fullname }
--- entry >> all entries are here, even destroyed, and spawn check shall use this, not the furnace_map
--- global.furnace_power = 12, -- starting in MW
--- global.furnace_efficiency = 1, -- starting in %, *100
--- global.furnace_name = "fpf-furnace-0", -- to spawn this furnace, when upgraded the upgraded furnace shall be spawned, all furnaces are upgraded automatically
--- global.fpf_force = nil,
--- global.furnace_spawn_queue = {}, -- any entry here shall be spawn and nil after spawn
--- entry >> global.furnace_spawn_queue[ tick ] = { chunkPos = {x, y}, surface = surface entity, force = force entity, furnace_name = furnace to spawn, spawn_complete = boolean } 
--- entry >> once spawn is complete the entry should be deleted
--- global.first_furnace_created = false
-
--- map center
-local mapCenter = get_chunk_center({x=0, y=0})
+--[[ mod state info
+global.furnace_map = furnace list, might include destroyed, unclaimed or enemy furnaces
+- [id: x/y] - uses furnace position as id
+- - x,y location
+- - id, same as id registered itself 
+- - crater info, entire definition
+- - furnace, entity itself
+- - surface, the furnace surface
+- - proofCheck, if set then the furnace is complete, all proof check is done etc, if set to true and the final check is done then I expect no further issues about the furnace crater
+- - dead: true/false, if it is dead then set to dead for simplicity
+- - claimed: nil/player_index either nil or player_index, who claimed it
+- - crater_chunks, creater chunk entity list
+- - [id: x/y] - uses chunk position as id 
+- - - position location
+- - - id, same as id registered itself
+- - - cliffs = { } - list of cliffs
+- - - - x,y location
+- - - - variation, cliff variation
+global.tick_queue = registered operations we want to do on preceding ticks
+global.chunk_queue = chunk list that we are interested in
+- [id: x/y] - uses chunk position as id
+- - x/y location of furnace as value (string) 
+global.furnace_power = 12, -- starting in MW
+global.furnace_efficiency = 1, -- starting in %, *100
+global.furnace_name = "fpf-furnace-0", -- to spawn this furnace, when upgraded the upgraded furnace shall be spawned, all furnaces are upgraded automatically
+global.fpf_force = will be force of the furnaces,
+global.first_furnace = x/y id of first furnace
+--]] 
 
 -- non global stuff
 -- list of known craters
 -- entry >> crater definition has a special format
 local approvedCraters = require("craterdata")
 local excludedSurfaces = { "beltlayer", "pipelayer", "Factory floor", "ControlRoom" }
-
--------------------------------------------------------------------------------------------------------------------------------
----- Development Stuff --------------------------------------------------------------------------------------------------------
-
--- dump state info
-local function dump_stats(msg)
-  if settings.global["fpf-debug"].value then
-    local baseMsg = "FPF[".. global.furnace_name .."/#" .. table_length(global.furnace_map) .. "/" .. global.furnace_power .. "MW/%" .. global.furnace_efficiency * 100 .. "] >> "
-    dprint(baseMsg .. msg)
-
-    for _, f in pairs(global.furnace_map) do
-      if not f then 
-        dprint("furnace is nil")
-      elseif f.valid then
-        dprint("F: " .. f.unit_number .. ", name: " .. f.name .. ", at " .. f.position.x .. "/" .. f.position.y)
-      else
-        dprint("furnace is invalid")
-      end
-    end
-  end
-end
+local craterForce = nil
 
 -------------------------------------------------------------------------------------------------------------------------------
 ---- Functions ----------------------------------------------------------------------------------------------------------------
 
 -- add furnace to map
 local add_furnace_record = function(furnace)
-  global.furnace_map[furnace.unit_number] = furnace
-  global.furnace_history["" .. furnace.position.x .. "/" .. furnace.position.y] = { position = furnace.position, initial = furnace.name, claimed = false, dead = false }
-
+  local id = fposition.id(furnace.position)
+  global.furnace_map[id].furnace = furnace
   -- attempts to prevent furnace to be operated without claim
   furnace.operable = false
   furnace.active = false
-  
-  dump_stats("furnace added: #".. furnace.unit_number .. ", @" .. furnace.position.x .. "/" .. furnace.position.y)
+  lprint("furnace added : " .. id)
 end
 
 -- swap furnace at map
 local swap_furnace_record = function(oldFurnaceId, newFurnace)
-  global.furnace_map[oldFurnaceId] = nil
-  global.furnace_map[newFurnace.unit_number] = newFurnace
-  
-  dump_stats("furnace swapped: #".. oldFurnaceId .. " >> #" .. newFurnace.unit_number .. ", @" .. newFurnace.position.x .. "/" .. newFurnace.position.y)
+  local id = fposition.id(newFurnace.position)
+  global.furnace_map[id].furnace = newFurnace
+  lprint("furnace swap : " .. id)
 end
 
 -- remove furnace from map
 local remove_furnace_record = function(furnace)
-  global.furnace_map[furnace.unit_number] = nil
-  global.furnace_history["" .. furnace.position.x .. "/" .. furnace.position.y].dead = true
-  
-  dump_stats("furnace removed: #".. furnace.unit_number)
+  local id = fposition.id(furnace.position)
+  global.furnace_map[id].furnace = nil
+  global.furnace_map[id].dead = true
+  lprint("furnace removed : " .. id)
 end
 
 -- replace existing furnace with new one
@@ -145,7 +135,7 @@ local replace_furnace_on_map = function (oldEntity, newFurnaceName)
     end
 
     local newEntityInventory = new_entity.get_fuel_inventory()
-    local newEntityInventoryContents = new_entity.get_fuel_inventory().get_contents() --get_inventory(defines.inventory.fuel).get_contents()
+    local newEntityInventoryContents = new_entity.get_fuel_inventory().get_contents()
    
     for item_name, item_count in pairs(fuelInventory) do
       newEntityInventory.insert{name = item_name, count = item_count}
@@ -161,12 +151,13 @@ end
 -- update existing furnaces
 local update_furnaces = function ()
   global.furnace_name = get_furnace_name(global.furnace_power, global.furnace_efficiency, furnacePowerUpgrade, furnaceEffUpgrade/100)
+  lprint("updating furnaces")
 
   local toUpdate = {}
-  for _, entity in pairs (global.furnace_map) do
-    if entity.valid then
-      if entity.name ~= global.furnace_name then
-        table.insert(toUpdate, entity)
+  for _, furnaceInfo in pairs (global.furnace_map) do
+    if furnaceInfo.furnace and furnaceInfo.furnace.valid then
+      if furnaceInfo.furnace.name ~= global.furnace_name then
+        table.insert(toUpdate, furnaceInfo.furnace)
       end
     end
   end
@@ -180,24 +171,30 @@ end
 
 -- calculate spawn chance for a furnace
 local get_furnace_spawn_chance = function (chunkPos)
-  local pos = get_chunk_center(chunkPos)
+  if not furnaceSpawning then 
+    return 0
+  end
+
+  local id = fposition.id(chunkPos)
+
+  local pos = fposition.chunk_center(chunkPos)
   local prob = 0
 
   -- 1. if within 160 (5ch) tile then we skip
-  local distance = get_distance(mapCenter, pos)
+  local distance = fposition.distance(fposition.chunk_center({x=0, y=0}), pos)
   if distance < 160 then 
     return prob
   end
 
   -- 2. if no furnace exists then the percentage starts with triple base rate
-  if table_length(global.furnace_history) < 1 then 
+  if ftable.length(global.furnace_map) < 1 then 
     prob = 3 * (furnaceSpawnBaseRate / 100) 
   end
 
   -- 3. if a furnace exists then get the closest distance between the furnace and the chunk center
-  for _, f in pairs(global.furnace_history) do
+  for _, f in pairs(global.furnace_map) do
     if f then 
-      local fDistance = get_distance(pos, f.position)
+      local fDistance = fposition.distance(pos, f.position)
       if fDistance < distance then distance = fDistance end
     end
   end
@@ -210,72 +207,160 @@ local get_furnace_spawn_chance = function (chunkPos)
   return prob
 end
 
--- queue new furnace spawn, as mentioned by Bilka2, we do it on next tick
-local queue_furnace_spawn = function(chunkPos, surface, tick)
-  local processing_tick = tick + 1
-  if not global.furnace_spawn_queue[processing_tick] then
-
-    local rand = math.random(#approvedCraters)
-    local crater = approvedCraters[rand]
-    if not crater then 
-      dprint( "crater not found")
-      return
-    end
-
-    global.furnace_spawn_queue[processing_tick] = { chunkPos = chunkPos, surface = surface, force = global.fpf_force, furnace_name = global.furnace_name, spawn_complete = false, crater = crater.author .. "_" .. crater.name } 
-  end
+-- queue to tick_queue
+local append_to_tickqueue = function(furnaceId, tick, chunkId, position)
+  local list = global.tick_queue[tick] or { } 
+  table.insert(list, { furnaceId = furnaceId , chunkId = chunkId, position = position } )
+  global.tick_queue[tick] = list
 end
 
--- spawn crater using furnace spawn
-local spawn_crater = function (furnaceSpawnInfo, furnace)
-  local fname = function(crater)
-    return crater.author .. "_" .. crater.name
-  end
-  local crater = findWithFunc(approvedCraters, fname, furnaceSpawnInfo.crater)
-
-  local craterForce = game.forces["neutral"]
-  spawning.spawn_crater(furnaceSpawnInfo.surface, craterForce, furnace.position, crater)
+-- queue to tick_queue
+local append_to_chunkqueue = function(furnaceId, chunkId, position)
+  local list = global.chunk_queue[chunkId] or { } 
+  table.insert(list, { furnaceId = furnaceId , chunkId = chunkId, position = position } )
+  global.chunk_queue[chunkId] = list
 end
 
--- real spawning here, also check variance and minor ruins/entities besides furnace, maybe even ore etc...
-local spawn_furnace = function(furnaceSpawnInfo)
-  if not furnaceSpawnInfo.spawn_complete then
-    local result = spawning.spawn_furnace(10, furnaceSpawnInfo.surface, global.fpf_force, furnaceSpawnInfo.chunkPos, furnaceSpawnInfo.furnace_name )
-    if result.res == 1 then
-      if result.entity and result.entity.valid then 
-        dprint( "generating done (" .. furnaceSpawnInfo.furnace_name .. ") at " .. furnaceSpawnInfo.chunkPos.x .."/" .. furnaceSpawnInfo.chunkPos.y .. ", surface: " .. furnaceSpawnInfo.surface.name )
-        furnaceSpawnInfo.spawn_complete = true
-        spawn_crater(furnaceSpawnInfo, result.entity)
-      else
-        dprint( "attempt gave good response but no entity" )
-      end
-    elseif result.res == -1 then
-      dprint( "doh, invalid surface" )
-    elseif result.res == -2 then 
-      dprint( "after countless tries we failed" )
-    end
-  end
-end
+-- prepare a furnace creation at chunk position
+local prepare_furnace_at_chunk = function(chunkPos)
+  local pos = fposition.chunk_to_pos(chunkPos)
+  pos = { 
+    x = pos.x + math.random(31) + 0.5, 
+    y = pos.y + math.random(31) + 0.5 
+  }
+  
+  local furnaceInfo = {
+    position = pos,
+    id = fposition.id(pos),
+    furnace = nil,
+    surface = nil,
+    dead = false,
+    claimed = nil,
+    crater = nil,
+    crater_chunks = { },
+    crater_chunks_spawned =0
+  }
 
--- locate and spawn first ever furnace
-local first_furnace_spawn = function (surface, force)
-  local chunkPos = {x=0, y =0}
-  local angle = math.rad(math.random() * 360)
-  local sin = math.sin(angle)
-  local cos = math.cos(angle)
-  local radius = 32 * 6 + math.random() * 128 -- 4 chunk distance variance over base, which is 6 chunk size
-  chunkPos.y = math.floor(sin * radius / 32)
-  chunkPos.x = math.floor(cos * radius / 32)
-
-  local rand = math.random(#approvedCraters)
-  local crater = approvedCraters[rand]
+  -- crater randomization
+  local rand = math.random(ftable.length(approvedCraters))
+  local crater = ftable.at(approvedCraters, rand)
   if not crater then 
     dprint( "crater not found")
+    return nil
+  end
+  furnaceInfo.crater = crater
+
+  global.furnace_map[furnaceInfo.id] = furnaceInfo
+
+  return furnaceInfo
+end
+
+-- register furnace
+local register_furnace = function (furnaceInfo, surface, tick)
+  -- we registered to chunk queue
+  if not surface or not surface.valid then
+    dprint("Surface info is nil or invalid") 
+    return nil
+   end
+
+   furnaceInfo.surface = surface
+
+  -- register furnace itself 
+  local chunkId = fposition.chunk_id(furnaceInfo.position)
+  local chunkPos = fposition.chunk(furnaceInfo.position)
+  if surface.is_chunk_generated(chunkPos) then 
+    append_to_tickqueue(furnaceInfo.id, tick + 1, chunkId, furnaceInfo.position)
+  else
+    append_to_chunkqueue(furnaceInfo.id, chunkId, furnaceInfo.position)
+  end
+
+  -- register chunks
+  local chunks = spawning.crater_chunks(furnaceInfo)
+  local mod = 60 -- the resource generation removes my cliffs, I have to wait for some time 
+  for _, chunk in pairs(chunks) do
+    local chunkPos = chunk.position
+    chunkId = fposition.id(chunkPos)
+    -- chunk of crater is generated already, so register for spawning
+    if surface.is_chunk_generated(chunkPos) then
+      mod = mod +10
+      append_to_tickqueue(furnaceInfo.id, tick + mod, chunkId)
+    else
+      -- chunk of crater is not generated yet, so we delay spawning cliffs
+      append_to_chunkqueue(furnaceInfo.id, chunkId)
+    end
+
+    furnaceInfo.crater_chunks[chunkId] = chunk
+  end
+
+  lprint("new furnace registered at " .. furnaceInfo.position.x .. "/" .. furnaceInfo.position.y .. ", with " .. ftable.length(furnaceInfo.crater_chunks)  .. "chunks")
+  return furnaceInfo
+end
+
+-- runs a proof check in case the cliffs are not spawned properly
+local run_proof = function (furnaceInfo, chunkId)
+  local chunkData = furnaceInfo.crater_chunks[chunkId]
+  if not chunkData then 
+    lprint("furnace " .. furnaceInfo.id .. " has no such a chunk to prove: " .. chunkId )
     return
   end
 
-  local result = { chunkPos = chunkPos, surface = surface, force = force, furnace_name = global.furnace_name, spawn_complete = false, crater = crater.author .. "_" .. crater.name }
-  return result
+  if not chunkData.proof_needed then
+    lprint("furnace " .. furnaceInfo.id .. " and chunk " .. chunkId .. " did not need proof")
+    return
+  end
+  chunkData.proof_needed = nil
+
+  if not furnaceInfo.surface.is_chunk_generated(chunkData.position) then
+    lprint("furnace " .. furnaceInfo.id .. " and chunk " .. chunkId .. " was not generated yet")
+  end
+
+  for _, cl in pairs(chunkData.entities) do
+    local list = furnaceInfo.surface.find_entities_filtered{position= cl.position, radius =2, type="cliff", name="fpf-cliff"}
+    local current = nil
+    for _, cliff in pairs(list) do 
+      if cliff and cliff.valid and cliff.cliff_orientation == cl.orientation then
+        current = cliff
+        break
+      end
+    end
+
+    local hasFault = false
+    if not current then
+      lprint("ERR: cliff [inside chunk " .. chunkId .. "] with ".. cl.orientation .. " orientation does not exist:" .. cl.position.x .. "/" .. cl.position.y )
+      hasFault = true
+    end 
+
+    chunkData.proof_needed = hasFault or chunkData.proof_needed
+    if hasFault then 
+      local res = spawning.spawn_cliff (furnaceInfo.surface, craterForce, cl, true)
+      if not res then
+        lprint("ERR: cliff correction still failed:" .. cl.position.x .. "/" .. cl.position.y .. ", orientation: " .. cl.orientation )
+      end
+    end
+  end
+
+  -- we need another proof after 2sec
+  if chunkData.proof_needed then
+    append_to_tickqueue(furnaceInfo.id, game.tick +120, chunkId)
+  else
+    lprint("furnace " .. furnaceInfo.id .. " and chunk " .. chunkId .. " proof is completed without further issues")
+  end
+
+end
+
+-- registers a call to perform chunk spawning
+local spawn_furnace_chunk = function( furnaceInfo, cliffChunk, tick)
+  local chunkPos = cliffChunk.position
+  if not furnaceInfo.surface.is_chunk_generated(chunkPos) then
+    lprint("furnace cliff was not generated but was called on chunk " .. entry.chunkId .. " for furnace " .. entry.furnaceId .. " completed")
+  end
+
+  spawning.spawn_crater(cliffChunk, furnaceInfo.surface, craterForce)
+  furnaceInfo.crater_chunks_spawned = furnaceInfo.crater_chunks_spawned +1 
+
+  -- proof
+  cliffChunk.proof_needed = true
+  append_to_tickqueue(furnaceInfo.id, tick +10, chunkId, furnaceInfo.position)
 end
 
 -------------------------------------------------------------------------------------------------------------------------------
@@ -305,6 +390,7 @@ local on_research_finished = function(event)
     local index = research.force.index
 
     global.furnace_power = global.furnace_power + furnacePowerUpgrade
+    lprint("furnace infinite power upgrade tech captured")
     update_furnaces()
   elseif name:find("fpf%-furnace%-eff%-upgrade%-inf%-") then
     local number = name:sub(name:len())
@@ -312,6 +398,7 @@ local on_research_finished = function(event)
     local index = research.force.index
 
     global.furnace_efficiency = global.furnace_efficiency + (furnaceEffUpgrade/100)
+    lprint("furnace infinite efficiency upgrade tech captured")
     update_furnaces()
   elseif name:find("fpf%-furnace%-power%-upgrade%-") then
     local number = name:sub(name:len())
@@ -319,6 +406,7 @@ local on_research_finished = function(event)
     local index = research.force.index
   
     global.furnace_power = 12 + 6 * number -- we know base furnace starts from 12MW and increment is 6MW
+    lprint("furnace power upgrade tech captured")
     update_furnaces()
   end
 end
@@ -332,18 +420,43 @@ local on_entity_removed = function(event)
   if name:find("fpf%-furnace%-") then
     remove_furnace_record(entity)
   end
+
+  -- my cliff is destroyed
+  if name:find("fpf%-cliff%") then
+    lprint("FPF-Cliff at " .. entity.position.x .. "/" .. entity.position.y .." with " .. entity.cliff_orientation .." is destroyed")
+  end
 end
 
 -- on chunk generated
 local on_chunk_generated = function (event)
-  if excludedSurfaces[event.surface.name] then return end
+  if ftable.contains(excludedSurfaces, event.surface.name) then return end
+  
+  local chunkId = fposition.id(event.position)
+  --lprint("chunk generated: " .. chunkId)
+  local entries = global.chunk_queue[chunkId]
+  if entries then
+    for _, entry in pairs(entries) do
+      local furnaceInfo = global.furnace_map[entry.furnaceId]
+      -- only if furnace is known and valid
+      if furnaceInfo then
+        if event.surface == furnaceInfo.surface then
+          append_to_tickqueue(furnaceInfo.id, event.tick +1, chunkId, furnaceInfo.position)
+        end
+      else
+        dprint("furnace id was registered for chunk generation but it was not found: " .. furnaceId )
+      end
+    end
+  end
+
+  global.chunk_queue[chunkId] = nil
 
   global.chunks_checked = global.chunks_checked +1
   local spawnChance = get_furnace_spawn_chance(event.position)
   local prob = math.random()
 
   if spawnChance > 0 and spawnChance > prob then 
-    queue_furnace_spawn(event.position, event.surface, event.tick)
+    local furnaceInfo = prepare_furnace_at_chunk(event.position)
+    register_furnace(furnaceInfo, event.surface, event.tick +300)
   end
 end
 
@@ -355,10 +468,11 @@ local on_area_selected = function (event)
   local claimants_force = game.get_player(event.player_index).force
   local claimants_position = game.get_player(event.player_index).position
   for _, entity in pairs(event.entities) do
-    if entity.valid and entity.force.name == global.fpf_force.name then
+    if entity.valid and entity.force.name == global.fpf_force.name and 
+      entity.name ~= "cliff" then
 
       -- only allow claiming if player is nearby, otherwise it can be done via map, which is not intended
-      local distance = get_distance(entity.position, claimants_position)
+      local distance = fposition.distance(entity.position, claimants_position)
       if distance < 32 then 
         entity.force = claimants_force
         entity.operable = true
@@ -381,78 +495,71 @@ end
 
 -- on tick
 local on_tick = function (event)
-  local furnaceSpawnInfo = global.furnace_spawn_queue[event.tick]
-  if not furnaceSpawnInfo then return end
+  local tickOps = global.tick_queue[event.tick]
+  if not tickOps then return end
   
-  if not furnaceSpawnInfo.spawn_complete then 
-    spawn_furnace(furnaceSpawnInfo)
+  for _, entry in pairs(tickOps) do
+    local furnaceInfo = global.furnace_map[entry.furnaceId]
+    if not furnaceInfo then
+      dprint("furnace id was registered for chunk generation but it was not found: " .. entry.furnaceId )
+    else
+      -- spawn furnace if not spawned but can be spawned
+      if furnaceInfo.position then
+        local furnaceChunkPos = fposition.chunk(furnaceInfo.position)
+        if furnaceInfo.surface.is_chunk_generated(furnaceChunkPos) and not furnaceInfo.furnace then
+          local res = spawning.spawn_furnace(furnaceInfo.position, furnaceInfo.surface, global.fpf_force, global.furnace_name)
+          if not res.entity then
+            dprint("furnace could not be spawned at location: " .. furnaceInfo.id)
+          else
+            furnaceInfo.furnace = res.entity
+          end
+        end
+      end
+      
+      -- spawn crater
+      if entry.chunkId then
+        local cliffChunk = furnaceInfo.crater_chunks[entry.chunkId]
+        if cliffChunk then
+          if not cliffChunk.proof_needed then
+            spawn_furnace_chunk( furnaceInfo, cliffChunk, event.tick)
+            cliffChunk.proof_needed = true
+            append_to_tickqueue(furnaceInfo.id, event.tick +300, entry.chunkId)
+          else
+            run_proof(furnaceInfo, entry.chunkId)
+            -- proof fixed some stuff and another proof is needed
+            if cliffChunk.proof_needed then
+              append_to_tickqueue(furnaceInfo.id, event.tick +300, entry.chunkId)
+            end
+          end
+        end
+      end
+    end
+
+    -- every cliff chunk is also spawned (which includes furnace itself as well since it is inside crater) now queue a final clearance
+    if ftable.length(furnaceInfo.crater_chunks) == furnaceInfo.crater_chunks_spawned then
+      local chunkId = fposition.id(furnaceInfo.position)
+      spawning.clear_crater(furnaceInfo.crater.clearance, furnaceInfo.position, furnaceInfo.surface)
+
+      -- my final final attempt of fixing craters
+      if not furnaceInfo.proofCheck then 
+        furnaceInfo.proofCheck = true
+        lprint("furnace ".. furnaceInfo.id .. " crater is completed, a final proof check is registered")
+        for chunkId, chunkInfo in pairs(furnaceInfo.crater_chunks) do
+          chunkInfo.proof_needed = true
+          append_to_tickqueue(furnaceInfo.id, event.tick +600, chunkId)
+        end
+      end
+    end
   end
 
-  global.furnace_spawn_queue[event.tick] = nil
+  global.tick_queue[event.tick] = nil
 end
 
 -------------------------------------------------------------------------------------------------------------------------------
 ---- Command Registration -----------------------------------------------------------------------------------------------------
 
--- manual entry to furnace spawn queue 
-local spawn_furnace_command = function (command)
-  local f = loadstring("return " .. command.parameter)
-  local arg = f()
-  local surface = game.surfaces[arg.surface or game.players[command.player_index].surface.name ]
-  if not surface then 
-    game.print{"command-output.fpf-spawn-furnace-surface-not-found"}
-    return
-  end
-
-  local craterName = arg.crater
-  if not craterName then 
-    local rand = math.random(#approvedCraters)
-    craterName = approvedCraters[rand].name
-  else
-    local fname = function(crater)
-      return crater.author .. "_" .. crater.name
-    end
-
-    local crater = findWithFunc(approvedCraters, fname, craterName)
-    if not crater then 
-      game.print{"command-output.fpf-spawn-furnace-crater-not-found"}
-      return
-    end
-  end
-
-
-  local myarg = {
-    chunkPos = arg.chunkPos or {x=0, y=0},
-    surface = surface,
-    furnace_name = arg.furnace_name or global.furnace_name,
-    spawn_complete = false,
-    crater = craterName
-  }
-
-  spawn_furnace(myarg) 
-end
-
--- force replace furnaces to current one
-local replace_furnaces_command = function(command)
-  local furnaceType = game.entity_prototypes[command.parameter or "fpf-furnace-0"]
-  if not furnaceType then 
-    game.print{ "command-output.fpf-spawn-furnace-type-unknown"}
-    return
-  end
-
-  for i, entity in pairs (global.furnace_map) do
-    if entity.valid then
-      if entity.name ~= furnaceType.name then
-        local oldId = entity.unit_number
-        local newFurnace = replace_furnace_on_map(entity, furnaceType.name)
-        swap_furnace_record(oldId, newFurnace)
-      end
-    end
-  end
-end
-
 -- reads a creater (cliffs) from map and then outputs to a file
-local read_crater = function (command)
+local read_crater_command = function (command)
   local f = loadstring("return " .. command.parameter)
   local arg = f()
   local name = arg.name
@@ -533,6 +640,7 @@ local read_crater = function (command)
   wf( "local crater = {")
   wf( "  name = \"" .. name .. "\",")
   wf( "  author = \"" .. author .. "\",")
+  wf( "  id = \"" .. author .. "_" .. name .. "\", ")
   wf( "  version = \"" .. version .. "\",")
   wf( "  variance = {")
   wf( "    north = " .. (variance.north or 0) .. ", ")
@@ -547,13 +655,34 @@ local read_crater = function (command)
   local maxx = reference.x
   local miny = reference.y
   local maxy = reference.y
+
+  local craterCliffs = {}
+  local positionInfo = nil
+  -- merged list for positions and cliffs
   for _, cliff in pairs (cliffs) do
     pos = { x = cliff.position.x - reference.x + 0.5, y = cliff.position.y - reference.y -0.5 }
-    wf("    { x = " .. pos.x .. ", y = " .. pos.y .. ", orientation = \"" .. cliff.cliff_orientation  .. "\" }," )
+    local craterCliffId = "cl_" .. pos.x .. "/" .. pos.y
+    positionInfo = craterCliffs[craterCliffId] or { x = pos.x, y = pos.y, cliffs = {} }
+    if not ftable.contains(positionInfo.cliffs, cliff.cliff_orientation) then
+      table.insert(positionInfo.cliffs, cliff.cliff_orientation)
+    end
+    craterCliffs[craterCliffId] = positionInfo
+
     if cliff.position.x < minx then minx = cliff.position.x end
     if cliff.position.x > maxx then maxx = cliff.position.x end
     if cliff.position.y < miny then miny = cliff.position.y end
     if cliff.position.y > maxy then maxy = cliff.position.y end
+  end
+
+  for key, _ in pairs (craterCliffs) do
+    local positionInfo = craterCliffs[key]
+    local craterCliffId = "cl_" .. positionInfo.x .. "/" .. positionInfo.y
+    local line = "    [\"" .. craterCliffId .."\"] = { x = " .. positionInfo.x .. ", y = " .. positionInfo.y .. ", cliffs = { " 
+    for _, orientation in pairs(positionInfo.cliffs) do
+      line = line .. "\"" .. orientation .. "\", "
+    end
+    line = line .. " } }, "
+    wf(line)
   end
   wf( "  },")
  
@@ -565,7 +694,7 @@ local read_crater = function (command)
   local radius =0
   for _, cliff in pairs (cliffs) do
     pos = {x = cliff.position.x, y = cliff.position.y}
-    local dis = get_distance(center, pos)
+    local dis = fposition.distance(center, pos)
     if dis > radius then radius = dis end
   end
   radius = math.floor(radius +8) -- add some slack
@@ -587,7 +716,7 @@ local read_crater = function (command)
 end
 
 -- gives information about the nearby furnace
-local give_furnace_info = function (command)
+local give_furnace_info_command = function (command)
   local surface = game.players[command.player_index].surface
   local entities = surface.find_entities_filtered{ 
     position = game.players[command.player_index].position, 
@@ -597,8 +726,8 @@ local give_furnace_info = function (command)
 
   for _, entity in pairs (entities) do
     if entity and entity.valid and entity.name:find("fpf%-furnace%-") then
-      local id = entity.position.x .. "/" .. entity.position.y
-      local furnaceInfo = global.furnace_history[id]
+      local id = fposition.id(entity.position)
+      local furnaceInfo = global.furnace_map[id]
       if furnaceInfo then
         game.print{ "command-output.fpf-furnaceinfo-command", entity.position.x, entity.position.y, entity.name, furnaceInfo.claimed, (furnaceInfo.crater or "nil") }
         return
@@ -607,12 +736,55 @@ local give_furnace_info = function (command)
   end
 end
 
--- register commands
-commands.add_command("fpf-spawn-furnace", {"command-help.fpf-spawn-furnace"}, spawn_furnace_command )
-commands.add_command("fpf-replace-furnaces", {"command-help.fpf-replace-furnaces"} , replace_furnaces_command )
-commands.add_command("fpf-read-crater", {"command-help.fpf-read-crater"}, read_crater )
-commands.add_command("fpf-furnace-info", {"command-help.fpf-furnace-info"}, give_furnace_info )
+-- force replace furnaces to current one
+local replace_furnaces_command = function(command)
+  local furnaceType = game.entity_prototypes[command.parameter or "fpf-furnace-0"]
+  if not furnaceType then 
+    game.print{ "command-output.fpf-spawn-furnace-type-unknown"}
+    return
+  end
 
+  for i, entity in pairs (global.furnace_map) do
+    if entity.valid then
+      if entity.name ~= furnaceType.name then
+        local oldId = entity.unit_number
+        local newFurnace = replace_furnace_on_map(entity, furnaceType.name)
+        swap_furnace_record(oldId, newFurnace)
+      end
+    end
+  end
+end
+
+-- runs a proof check on the all chunks 
+local prove_crater_command = function(command)
+  local surface = game.players[command.player_index].surface
+  local entities = surface.find_entities_filtered{ 
+    position = game.players[command.player_index].position, 
+    radius = 32,
+    type= "burner-generator",
+  }
+
+  local furnaceInfo = nil
+  for _, entity in pairs (entities) do
+    if entity and entity.valid and entity.name:find("fpf%-furnace%-") then
+      local id = fposition.id(entity.position)
+      furnaceInfo = global.furnace_map[id]
+      if furnaceInfo then
+        break
+      end
+    end
+  end
+
+  for chunkId, chunkInfo in pairs(furnaceInfo.crater_chunks) do
+    chunkInfo.proof_needed = true
+    run_proof(furnaceInfo, chunkId)
+  end
+end
+
+commands.add_command("fpf-replace-furnaces", {"command-help.fpf-replace-furnaces"} , replace_furnaces_command )
+commands.add_command("fpf-furnace-info", {"command-help.fpf-furnace-info"}, give_furnace_info_command )
+commands.add_command("fpf-read-crater", {"command-help.fpf-read-crater"}, read_crater_command )
+commands.add_command("fpf-prove-crater", {"command-help.fpf-prove-crater"}, prove_crater_command )
 -------------------------------------------------------------------------------------------------------------------------------
 ---- Library Registration -----------------------------------------------------------------------------------------------------
 
@@ -645,14 +817,15 @@ lib.events =
 
 local defaults = function ()
   global.furnace_map = global.furnace_map or {}
-  global.furnace_history = global.furnace_history or {}
   global.furnace_power = global.furnace_power or 12
   global.furnace_efficiency = global.furnace_efficiency or 1
   global.furnace_name = global.furnace_name or "fpf-furnace-0"
   global.fpf_force = global.fpf_force or nil
-  global.furnace_spawn_queue = global.furnace_spawn_queue or {}
   global.first_furnace = global.first_furnace or nil
-  global.chunks_checked = global.chunks_checked or 0
+  global.tick_queue = global.tick_queue or {}
+  global.chunk_queue = global.chunk_queue or {}
+  global.chunks_checked = global.chunks_checked or 1
+  global.cliff_correction = global.cliff_correction or {} 
 end
 
 local self_init = function()
@@ -666,28 +839,37 @@ local self_init = function()
     global.fpf_force = fpf_force
   end
 
+  craterForce = game.forces["neutral"]
+
   -- first ever furnace is kind of free, but once only
-  if not global.first_furnace then
+  if not global.first_furnace and furnaceSpawning then
     local surface = game.surfaces["nauvis"] -- default surface
-    local spawnInfo = first_furnace_spawn(surface, fpf_force)
-    global.furnace_spawn_queue[0] = spawnInfo -- register for first tick
-    global.first_furnace = spawnInfo
+    local fpos = fposition.random_direction({x=0, y=0}, 32 * 6 + math.random() * 128)
+    fpos = fposition.chunk(fpos)
+    local furnaceInfo = prepare_furnace_at_chunk(fpos)
+    register_furnace(furnaceInfo, surface, game.tick)
+    global.first_furnace = fposition.id(furnaceInfo.position)
   end
+
+  if global.first_furnace and not furnaceSpawning then
+    game.print{"mod-setting-description.fpf-spawn-warning"}
+  end
+
 end
 
 lib.on_init = function()
-  dprint("on_init")
+  lprint("on_init")
   defaults()
   self_init()
 end
   
 lib.on_configuration_changed = function ()
-  dprint("on_configuration_changed")
+  lprint("on_configuration_changed")
   self_init()
 end
 
 lib.on_load = function()
-  dprint("on_load")
+  lprint("on_load")
   defaults()
 end
 

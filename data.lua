@@ -11,3 +11,8 @@ for name,tile in pairs(data.raw.tile) do
       data.raw.tile[name].autoplace = nil
   end
 end
+
+-- fpf-cliff
+local fpfcliff = table.deepcopy(data.raw["cliff"]["cliff"])
+fpfcliff.name = "fpf-cliff"
+data:extend({fpfcliff})
