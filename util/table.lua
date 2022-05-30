@@ -22,7 +22,6 @@ function table_first(table, f)
   return nil
 end
 
-
 -- checks if table contains element
 function table_contains(table, entry, f)
   local func = f or (function(a,b) return a == b end)
@@ -46,9 +45,30 @@ function table_at(table, n)
   return nil
 end
 
+-- removes value from table
+function table_remove_value(T, value, f)
+  local func = f or (function(a,b) return a == b end)
+  for i,v in pairs(T) do 
+    if func(value, v) then 
+      table.remove(T, i)
+      return
+    end
+  end
+end
+
+-- adds to table if it does not exist
+function table_append(T, entry, f)
+  if not table_contains(T, entry) then
+    table.insert(T, entry)
+  end
+end
+  
+
 local ftable = {}
 ftable.length = table_length
 ftable.first = table_first
 ftable.contains = table_contains
 ftable.at = table_at
+ftable.remove_value = table_remove_value
+ftable.append = table_append
 return ftable

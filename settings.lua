@@ -6,6 +6,12 @@ data:extend({
      default_value = false,
    },
    {
+     type = "bool-setting",
+     name = "fpf-dont-disable-alternate-power",
+     setting_type = "startup",
+     default_value = false,
+   },
+   {
       type = "int-setting",
       name = "fpf-furnace-upgrade-power-max",
       setting_type = "startup",

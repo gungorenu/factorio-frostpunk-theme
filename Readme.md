@@ -25,8 +25,7 @@ general priority is the item order seen here
 
 todo list for the mod
 
-- EASY **Disable Power Options:** while in Factorio they have good use, in the Frostpunk theme they are absolutely cheating and against the idea of the theme. Steam Engine, Solar Panel and nuclear power (Nuclear Reactor, Steam Turbine, Heat Pipe, Heat Exchanger) shall be disabled. 
-- EASY **Abandoned Resources:** spawning a single furnace seems weird, maybe I should put some chests around furnace, and even turrets etc? like the Abandoned Ruins mod. if there shall be turrets then probably I need to define a new force which is enemy to player and ally to furnace force, maybe?
+- EASY+LONG **Abandoned Resources:** spawning a single furnace seems weird, maybe I should put some chests around furnace, and even turrets etc? like the Abandoned Ruins mod. if there shall be turrets then probably I need to define a new force which is enemy to player and ally to furnace force, maybe?
 
 theme extension changes planned. below shall not be forced, but very recommended and maybe by default they shall be activated.
 
@@ -44,6 +43,7 @@ below are fully hard to do stuff, maybe not so necessary. I will not focus on th
 
 these are done and hopefully will not be broken
 
+- DONE **Disable Power Options:** only disabled building on map, layers shall prevent items put. items can still be crafted (for use of satellite) 
 - DONE **Supplementary Burner Generator:** a simple generator for outposts since they also require power. SBG mod looks perfect for that, and it shall be part of this mod (I shall copy code of it)
 - NOT NEEDED **Random Seed to Map Seed:** according to what I understood, it is already done, math.random() generates random numbers using game's seed
 - DONE **Auto/Manual Proof Check:** both with ticks or with command a proof of crater can be done
@@ -111,6 +111,7 @@ I am not a good modder but there are an abundant number of good mods with code a
 - SBG by Ondra4260
 - Burner Fuel Bonus by DaveMcW
 - No Lakes by Pithlit
+- Don't build on ores by darkfrei
 
 and of course Frostpunk and Factorio game copyrights are owned by the developers of those games, I am just a fan of both games
 
