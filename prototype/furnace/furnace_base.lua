@@ -115,7 +115,6 @@ data:extend({
     name = "fpf-signal",
     icon = "__FPF__/graphics/icons/furnace.png",
     icon_size = 64, icon_mipmaps = 4,
-    --group = "production"
     subgroup = "energy",
   }
 })

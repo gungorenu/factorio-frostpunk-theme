@@ -1,6 +1,11 @@
+require("prototype.shared")
+
 -- furnace definitions
 require("prototype.furnace.furnace_base")
 require("prototype.furnace.furnace_infinite")
+
+-- sbg (simple burner generator) definition
+require("prototype.burner.sbg")
 
 -- claim tool, taken from Abandoned Ruins mod
 require("prototype.claim.claim")

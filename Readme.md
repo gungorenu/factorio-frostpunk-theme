@@ -25,10 +25,8 @@ general priority is the item order seen here
 
 todo list for the mod
 
-- EASY **Supplementary Burner Generator:** a simple generator for outposts since they also require power. SBG mod looks perfect for that, and it shall be part of this mod (I shall copy code of it)
 - EASY **Disable Power Options:** while in Factorio they have good use, in the Frostpunk theme they are absolutely cheating and against the idea of the theme. Steam Engine, Solar Panel and nuclear power (Nuclear Reactor, Steam Turbine, Heat Pipe, Heat Exchanger) shall be disabled. 
 - EASY **Abandoned Resources:** spawning a single furnace seems weird, maybe I should put some chests around furnace, and even turrets etc? like the Abandoned Ruins mod. if there shall be turrets then probably I need to define a new force which is enemy to player and ally to furnace force, maybe?
-- EASY **Random Seed to Map Seed:** there are some random number usages and they should be linked to map seed for better and redictable randomness, tied to setting
 
 theme extension changes planned. below shall not be forced, but very recommended and maybe by default they shall be activated.
 
@@ -46,6 +44,9 @@ below are fully hard to do stuff, maybe not so necessary. I will not focus on th
 
 these are done and hopefully will not be broken
 
+- DONE **Supplementary Burner Generator:** a simple generator for outposts since they also require power. SBG mod looks perfect for that, and it shall be part of this mod (I shall copy code of it)
+- NOT NEEDED **Random Seed to Map Seed:** according to what I understood, it is already done, math.random() generates random numbers using game's seed
+- DONE **Auto/Manual Proof Check:** both with ticks or with command a proof of crater can be done
 - DONE **OnChunk Build Queue:** this is the solution to the bug about built stuff being overwritten. now I have to make a proof check after some ticks. it is not optimal because I have to check each and every cliff but it works and it is done twice only (once on built and second on entire crater complete), also added a command to make the check done upon request
 - DONE **Manual Spawn Cliffs:** spawn the FPF cliffs on map, surrounding the furnace
 - PARTIAL DONE **Spawn Crater With Script:** this is the code of Abandoned Ruins mod, hopefully taking code shall be easy

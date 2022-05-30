@@ -129,8 +129,10 @@ local function spawn_furnace (position, surface, force, entityName)
       raise_built = true,
       create_build_effect_smoke = false,
     }
-   e.health = math.random(game.entity_prototypes[entityName].max_health)
-   return { entity = e, res =1 }
+
+    e.health = game.entity_prototypes[entityName].max_health / 2
+    e.health = e.health + math.random(game.entity_prototypes[entityName].max_health /2)
+    return { entity = e, res =1 }
   end
 end
 

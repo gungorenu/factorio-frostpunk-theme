@@ -2,18 +2,6 @@ require("././util/functions")
 
 local named_entities = settings.startup["fpf-namedentities"].value
 
-local function hit_effects_entity(offset_deviation, offset)
-  local offset = offset or {0, 1}
-  return
-  {
-    type = "create-entity",
-    entity_name = "spark-explosion",
-    offset_deviation = offset_deviation or {{-0.5, -0.5}, {0.5, 0.5}},
-    offsets = {offset},
-    damage_type_filters = "fire"
-  }
-end
-
 local function get_emission( furnacePower, furnaceEffectivity)
   local def = 480
   local effModifier = 1 + (furnaceEffectivity -1) * 3 -- effectivity bonus applies trippled
@@ -69,7 +57,7 @@ function get_furnace(nameSuffix, furnacePower, furnaceEffectivity)
       light_flicker =
       {
         color = {1,0.75,0},
-        minimum_light_size = 2,
+        minimum_light_size = 6,
         minimum_intensity = 0.45,
         maximum_intensity = 0.95
       },

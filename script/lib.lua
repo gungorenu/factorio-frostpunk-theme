@@ -477,8 +477,9 @@ local on_area_selected = function (event)
         entity.force = claimants_force
         entity.operable = true
         entity.active = true
-        if global.furnace_history["" .. entity.position.x .. "/" .. entity.position.y] then 
-          global.furnace_history["" .. entity.position.x .. "/" .. entity.position.y].claimed = true
+        local id = fposition.id(entity.position)
+        if global.furnace_map[id] then 
+          global.furnace_map[id].claimed = true
         end
       end
     end
