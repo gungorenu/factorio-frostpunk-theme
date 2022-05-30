@@ -782,10 +782,63 @@ local prove_crater_command = function(command)
   end
 end
 
+-- spawns surface at mentioned position,  
+local spawn_furnace_command = function (command)
+  local f = loadstring("return " .. (command.parameter or "{ }"))
+  local arg = f()
+  local surface = game.surfaces[arg.surface or game.players[command.player_index].surface.name ]
+  if not surface then 
+    game.print{"command-output.fpf-spawn-furnace-surface-not-found"}
+    return
+  end
+
+  local craterName = arg.crater
+  local crater = nil
+  if not craterName then 
+    local rand = math.random(ftable.length(approvedCraters))
+    crater = ftable.at(approvedCraters, rand)
+  else
+    local fname = function(c)
+      return (c.author .. "_" .. c.name) == craterName
+    end
+
+    crater = ftable.first(approvedCraters, fname)
+    if not crater then 
+      game.print{"command-output.fpf-spawn-furnace-crater-not-found"}
+      return
+    end
+  end
+
+  local chunkPos = arg.chunkPos or fposition.chunk(game.players[command.player_index].position)
+  local pos = fposition.chunk_to_pos(chunkPos)
+  pos = { 
+    x = pos.x + math.random(31) + 0.5, 
+    y = pos.y + math.random(31) + 0.5 
+  }
+
+  local furnaceInfo = {
+    position = pos,
+    id = fposition.id(pos),
+    furnace = nil,
+    surface = surface,
+    dead = false,
+    claimed = nil,
+    crater = crater,
+    crater_chunks = { },
+    crater_chunks_spawned =0
+  }
+
+  global.furnace_map[furnaceInfo.id] = furnaceInfo
+
+  register_furnace(furnaceInfo, surface, 10 + game.tick)
+end
+
 commands.add_command("fpf-replace-furnaces", {"command-help.fpf-replace-furnaces"} , replace_furnaces_command )
 commands.add_command("fpf-furnace-info", {"command-help.fpf-furnace-info"}, give_furnace_info_command )
 commands.add_command("fpf-read-crater", {"command-help.fpf-read-crater"}, read_crater_command )
 commands.add_command("fpf-prove-crater", {"command-help.fpf-prove-crater"}, prove_crater_command )
+commands.add_command("fpf-spawn-furnace", {"command-help.fpf-spawn-furnace"}, spawn_furnace_command )
+
 -------------------------------------------------------------------------------------------------------------------------------
 ---- Library Registration -----------------------------------------------------------------------------------------------------
 

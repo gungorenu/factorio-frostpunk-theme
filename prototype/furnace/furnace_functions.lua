@@ -24,7 +24,7 @@ function get_furnace(nameSuffix, furnacePower, furnaceEffectivity)
     icon_size = 64, icon_mipmaps = 4,
     localised_name = {localisedName, furnacePower, furnaceEffectivity*100},
     localised_description = {localisedDesc, furnacePower, furnaceEffectivity*100 },
-    flags = {"placeable-neutral", "not-rotatable", "not-deconstructable", "not-blueprintable", "not-upgradable" },
+    flags = {"placeable-neutral", "player-creation", "not-rotatable", "not-deconstructable", "not-blueprintable", "not-upgradable" },
     minable = nil,
     max_health = 1000,
     rotate = false,

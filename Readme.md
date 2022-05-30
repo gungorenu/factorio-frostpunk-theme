@@ -33,7 +33,6 @@ theme extension changes planned. below shall not be forced, but very recommended
 - EASY **Beacon Changes:** I think of updating beacons for some changes. beacons should allow more slots (4) and +2 range but should stall machines if more than one beacon affects a machine. there are mods for this and an existing mod code shall be taken. not decided yet and it is just an idea.
 - EASY **Effectivity Modules:** since power is a big limiter now, they are more important now. the eff-2 and eff-3 modules shall have a bump on their stats, and maybe have speed bonus as well
 - EASY **Oil Cracking:** water recipes for oil processing and cracking shall be changed to steam
-- EASY **Enable Power Options:** although disabled, the player can enable the power options with this mod, will be a little cheaty but player defines if it is cheat or not
 
 below are fully hard to do stuff, maybe not so necessary. I will not focus on these for real, until to a point that I have time besides other stuff
 
@@ -43,6 +42,7 @@ below are fully hard to do stuff, maybe not so necessary. I will not focus on th
 
 these are done and hopefully will not be broken
 
+- DONE **Enable Power Options:** handled with Disable option. 
 - DONE **Disable Power Options:** only disabled building on map, layers shall prevent items put. items can still be crafted (for use of satellite) 
 - DONE **Supplementary Burner Generator:** a simple generator for outposts since they also require power. SBG mod looks perfect for that, and it shall be part of this mod (I shall copy code of it)
 - NOT NEEDED **Random Seed to Map Seed:** according to what I understood, it is already done, math.random() generates random numbers using game's seed
