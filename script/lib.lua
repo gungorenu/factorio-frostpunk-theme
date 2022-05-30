@@ -150,7 +150,14 @@ end
 
 -- update existing furnaces
 local update_furnaces = function ()
-  global.furnace_name = get_furnace_name(global.furnace_power, global.furnace_efficiency, furnacePowerUpgrade, furnaceEffUpgrade/100)
+  local furnaceName = get_furnace_name(global.furnace_power, global.furnace_efficiency, furnacePowerUpgrade, furnaceEffUpgrade/100)
+  local furnaceTypes = game.get_filtered_entity_prototypes({{ filter = "name", name = furnaceName }})
+  if ftable.length(furnaceTypes) <1 then
+    game.print{ "command-output.fpf-furnace-name-not-found" }
+    return
+  end
+  
+  global.furnace_name = furnaceName
   lprint("updating furnaces")
 
   local toUpdate = {}
@@ -384,7 +391,7 @@ local on_research_finished = function(event)
 
   local name = research.name
 
-  if name:find("fpf%-furnace%-power%-upgrade%-inf%-") then
+  if name:find("fpf%-furnace%-inf%-power%-upgrade%-") then
     local number = name:sub(name:len())
     if not tonumber(number) then return end
     local index = research.force.index
@@ -392,7 +399,7 @@ local on_research_finished = function(event)
     global.furnace_power = global.furnace_power + furnacePowerUpgrade
     lprint("furnace infinite power upgrade tech captured")
     update_furnaces()
-  elseif name:find("fpf%-furnace%-eff%-upgrade%-inf%-") then
+  elseif name:find("fpf%-furnace%-inf%-eff%-upgrade%-") then
     local number = name:sub(name:len())
     if not tonumber(number) then return end
     local index = research.force.index
@@ -907,6 +914,10 @@ local self_init = function()
 
   if global.first_furnace and not furnaceSpawning then
     game.print{"mod-setting-description.fpf-spawn-warning"}
+  elseif furnaceSpawning then
+    game.print{"mod-setting-description.fpf-spawn-enabled"}
+  else 
+    game.print{"mod-setting-description.fpf-spawn-disabled"}
   end
 
 end

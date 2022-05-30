@@ -219,13 +219,28 @@ function get_furnace_upgrade_tech_power(id, count, time, red, green, black, blue
   if id > 1 then
     table.insert(tech.prerequisites, "fpf-furnace-power-upgrade-"..(id-1))
   end
+  if green > 0 then
+    table.insert(tech.prerequisites, "logistic-science-pack")
+  end
+  if black > 0 then
+    table.insert(tech.prerequisites, "military-science-pack")
+  end
+  if blue > 0 then
+    table.insert(tech.prerequisites, "chemical-science-pack")
+  end
+  if purple > 0 then
+    table.insert(tech.prerequisites, "production-science-pack")
+  end
+  if yellow > 0 then
+    table.insert(tech.prerequisites, "utility-science-pack")
+  end
   return tech
 end
 
 function get_furnace_power_upgrade_inf_tech(id, powerUpgrade)
   local tech = {
     type = "technology",
-    name = "fpf-furnace-power-upgrade-inf-1",
+    name = "fpf-furnace-inf-power-upgrade-1",
     icons = {
       {
         icon = "__FPF__/graphics/technology/furnace.png",
@@ -238,8 +253,8 @@ function get_furnace_power_upgrade_inf_tech(id, powerUpgrade)
         shift = {100, 100}
       }
     },
-    localised_name = {"technology-name.fpf-furnace-power-upgrade-inf", id },
-    localised_description = {"technology-description.fpf-furnace-power-upgrade-inf", powerUpgrade},
+    localised_name = {"technology-name.fpf-furnace-inf-power-upgrade", id },
+    localised_description = {"technology-description.fpf-furnace-inf-power-upgrade", powerUpgrade},
     prerequisites = {"fpf-furnace-power-upgrade-6", "space-science-pack"},
     max_level = "infinite",
     effects =
@@ -270,7 +285,7 @@ function get_furnace_power_upgrade_inf_tech(id, powerUpgrade)
   }    
 
   if id > 1 then
-    table.insert(tech.prerequisites, "fpf-furnace-power-upgrade-inf-"..(id-1))
+    table.insert(tech.prerequisites, "fpf-furnace-inf-power-upgrade-"..(id-1))
   end
   return tech
 end
@@ -278,7 +293,7 @@ end
 function get_furnace_eff_upgrade_inf_tech(id, effUpgrade)
   local tech = {
     type = "technology",
-    name = "fpf-furnace-eff-upgrade-inf-1",
+    name = "fpf-furnace-inf-eff-upgrade-1",
     icons = {
       {
         icon = "__FPF__/graphics/technology/furnace.png",
@@ -291,8 +306,8 @@ function get_furnace_eff_upgrade_inf_tech(id, effUpgrade)
         shift = {100, 100}
       }
     },
-    --localised_name = {"technology-name.fpf-furnace-eff-upgrade-inf", id },
-    localised_description = {"technology-description.fpf-furnace-eff-upgrade-inf", effUpgrade},
+    localised_name = {"technology-name.fpf-furnace-inf-eff-upgrade", id },
+    localised_description = {"technology-description.fpf-furnace-inf-eff-upgrade", effUpgrade},
     prerequisites = {"fpf-furnace-power-upgrade-6", "space-science-pack"},
     max_level = "infinite",
     effects =
@@ -323,7 +338,7 @@ function get_furnace_eff_upgrade_inf_tech(id, effUpgrade)
   }    
 
   if id > 1 then
-    table.insert(tech.prerequisites, "fpf-furnace-eff-upgrade-inf-"..(id-1))
+    table.insert(tech.prerequisites, "fpf-furnace-inf-eff-upgrade-"..(id-1))
   end
   return tech
 end

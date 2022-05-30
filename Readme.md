@@ -23,12 +23,9 @@ the mod shall put dependency on some mods on mod portal since the ambiance fits 
 
 general priority is the item order seen here
 
-todo list for the mod
+main stuff is done. remaining are theme extension changes. below shall not be forced, but very recommended and maybe by default they shall be activated.
 
 - EASY+LONG **Abandoned Resources:** spawning a single furnace seems weird, maybe I should put some chests around furnace, and even turrets etc? like the Abandoned Ruins mod. if there shall be turrets then probably I need to define a new force which is enemy to player and ally to furnace force, maybe?
-
-theme extension changes planned. below shall not be forced, but very recommended and maybe by default they shall be activated.
-
 - EASY **Burner Lamp / Torch:** a lamp which has no power requirement because it gets power from burner fuel
 - EASY **Beacon Changes:** I think of updating beacons for some changes. beacons should allow more slots (4) and +2 range but should stall machines if more than one beacon affects a machine. there are mods for this and an existing mod code shall be taken. not decided yet and it is just an idea.
 - EASY **Effectivity Modules:** since power is a big limiter now, they are more important now. the eff-2 and eff-3 modules shall have a bump on their stats, and maybe have speed bonus as well
