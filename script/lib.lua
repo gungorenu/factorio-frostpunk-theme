@@ -429,7 +429,7 @@ local on_entity_removed = function(event)
   end
 
   -- my cliff is destroyed
-  if name:find("fpf%-cliff%") then
+  if name:find("fpf%-cliff") then
     lprint("FPF-Cliff at " .. entity.position.x .. "/" .. entity.position.y .." with " .. entity.cliff_orientation .." is destroyed")
   end
 end
@@ -528,16 +528,14 @@ local on_tick = function (event)
       if entry.chunkId then
         local cliffChunk = furnaceInfo.crater_chunks[entry.chunkId]
         if cliffChunk then
-          if not cliffChunk.proof_needed then
+          if cliffChunk.proof_needed or furnaceInfo.proofCheck then
+            lprint("furnace " .. furnaceInfo.id .. " is proving chunk " .. entry.chunkId)
+            run_proof(furnaceInfo, entry.chunkId)
+          else
+            lprint("furnace " .. furnaceInfo.id .. " is spawning chunk " .. entry.chunkId)
             spawn_furnace_chunk( furnaceInfo, cliffChunk, event.tick)
             cliffChunk.proof_needed = true
             append_to_tickqueue(furnaceInfo.id, event.tick +300, entry.chunkId)
-          else
-            run_proof(furnaceInfo, entry.chunkId)
-            -- proof fixed some stuff and another proof is needed
-            if cliffChunk.proof_needed then
-              append_to_tickqueue(furnaceInfo.id, event.tick +300, entry.chunkId)
-            end
           end
         end
       end
