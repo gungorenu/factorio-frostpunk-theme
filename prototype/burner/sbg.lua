@@ -1,8 +1,6 @@
 -- source: SBG mod by Ondra420 
 -- https://mods.factorio.com/mod/Simple-Burner-Generator
 
---require("./shared")
-
 -- smoke
 data:extend(
 {
@@ -75,8 +73,8 @@ data:extend({
       {
         color = { 1, 0.75, 0},
         minimum_light_size = 1,
-        minimum_intensity = 0.45,
-        maximum_intensity = 0.95
+        minimum_intensity = 0.35,
+        maximum_intensity = 0.75
       },
       smoke =
       {
@@ -89,7 +87,7 @@ data:extend({
         },
         {
           name = "fpf-simple-burner-generator-smoke",
-          frequency = 60,
+          frequency = 20,
           north_position = {0.05, 0.9},
           east_position = {0.05, 0.8},
           starting_vertical_speed = 0.05,
@@ -153,7 +151,7 @@ data:extend({
     icon_size = 32,
     flags = {},
     subgroup = "energy",
-    order = "b[steam-power]-c[simple-burner-generator]",
+    order = "b[steam-power]-c[fpf-simple-burner-generator]",
     place_result = "fpf-simple-burner-generator",
     stack_size = 10
   },
@@ -168,9 +166,9 @@ data:extend({
     ingredients =
     {
       {"boiler", 1},
-      {"iron-plate", 4},
-      {"iron-gear-wheel", 5},
-      {"pipe", 3}
+      {"iron-plate", 5},
+      {"pipe", 5},
+      {"iron-gear-wheel", 10}
     },
     result = "fpf-simple-burner-generator"
   },

@@ -7,6 +7,9 @@ require("prototype.furnace.furnace_infinite")
 -- sbg (simple burner generator) definition
 require("prototype.burner.sbg")
 
+-- burner light definition
+require("prototype.torch.torch")
+
 -- claim tool, taken from Abandoned Ruins mod
 require("prototype.claim.claim")
 
