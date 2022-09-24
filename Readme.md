@@ -36,7 +36,7 @@ below are fully hard to do stuff, maybe not so necessary. I will not focus on th
 
 these are done and hopefully will not be broken
 
-- DONE **More Craters:** right now only one crater exists, more craters are required, at least 8 total
+- DONE **More Craters:** eight craters are defined
 - DONE **Progressive Craters:** every crater shall increase the distance needed for new craters, starts with 0 with first crater but with each new crater discovered adds additional 4 tile distance
 - DONE **Beacon Changes:** I think of updating beacons for some changes. beacons should allow more slots (4) and +2 range but should stall machines if more than one beacon affects a machine. there are mods for this and an existing mod code shall be taken. not decided yet and it is just an idea.. DONE as a seperate mod, not part of this
 - DONE **Effectivity Modules:** since power is a big limiter now, they are more important now. the eff-2 and eff-3 modules shall have a bump on their stats, and maybe have speed bonus as well. tied to setting, so can be disabled
