@@ -15,6 +15,7 @@ local furnacePowerUpgrade = settings.startup["fpf-furnace-upgrade-power-upgrade"
 local furnaceEffUpgrade = settings.startup["fpf-furnace-upgrade-eff-upgrade"].value -- in %, defaults to %5
 local furnaceSpawnBaseRate = settings.global["fpf-furnace-spawn-baserate"].value
 local furnaceSpawnMinDistance = settings.global["fpf-furnace-spawn-mindistance"].value
+local furnaceSpawnAccDistance = settings.global["fpf-furnace-spawn-accdistance"].value
 local furnaceSpawnProbPerChunk = settings.global["fpf-furnace-spawn-rateincrement-perchunk"].value
 local furnaceSpawning = settings.global["fpf-furnace-spawning"].value -- disables spawning of furnaces, basically disables the mod
 
@@ -206,11 +207,19 @@ local get_furnace_spawn_chance = function (chunkPos)
     end
   end
   
-  -- 4. if distance is closer than min defined distance then we skip
-  if distance < furnaceSpawnMinDistance then return 0 end
+  -- 4. every spawned furnace extends the distance
+  local furnaceCount = ftable.length(global.furnace_map) -1
+  if ( furnaceCount < 0 ) then 
+    furnaceCount =0
+  end
 
-  -- 5. depending on the furnace closest distance the percentage shall be calculated
-  prob = prob + ((distance - furnaceSpawnMinDistance) / 32) * (furnaceSpawnProbPerChunk / 100)
+  local minSpawnDistance = furnaceSpawnMinDistance + (furnaceCount * furnaceSpawnAccDistance)
+
+  -- 5. if distance is closer than min defined distance then we skip
+  if distance < minSpawnDistance then return 0 end
+
+  -- 6. depending on the furnace closest distance the percentage shall be calculated
+  prob = prob + ((distance - minSpawnDistance) / 32) * (furnaceSpawnProbPerChunk / 100)
   return prob
 end
 

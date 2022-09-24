@@ -76,6 +76,13 @@ data:extend({
   },
   {
      type = "int-setting",
+     name = "fpf-furnace-spawn-accdistance",
+     setting_type = "runtime-global",
+     default_value = 128, -- 4 chunk
+     minimum_value = 0
+  },
+  {
+     type = "int-setting",
      name = "fpf-furnace-spawn-rateincrement-perchunk",
      setting_type = "runtime-global",
      default_value = 1,

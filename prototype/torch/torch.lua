@@ -91,9 +91,9 @@ data:extend({
       light_flicker =
       {
         color = {1, 0.75, 0},
-        minimum_light_size = 9,
-        minimum_intensity = 0.75,
-        maximum_intensity = 0.95
+        minimum_light_size = 4,
+        minimum_intensity = 0.35,
+        maximum_intensity = 0.75
       }
     },
     energy_source =

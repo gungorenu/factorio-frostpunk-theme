@@ -23,10 +23,12 @@ end
 -- use steam instead of water
 local oilProcessingUseWater = settings.startup["fpf-dont-change-oil-recipes"].value
 if not oilProcessingUseWater then
-  swap_ingredient_in_recipe( data.raw.recipe["advanced-oil-processing"], "water", {type = "fluid", name = "steam", amount = 50} )
-  swap_ingredient_in_recipe( data.raw.recipe["heavy-oil-cracking"], "water", {type = "fluid", name = "steam", amount = 30} )
-  swap_ingredient_in_recipe( data.raw.recipe["light-oil-cracking"], "water", {type = "fluid", name = "steam", amount = 30} )
-  swap_ingredient_in_recipe( data.raw.recipe["sulfur"], "water", {type = "fluid", name = "steam", amount = 30} )
+  if settings.startup["superexpensivemode-satellite-rocket-product-match-one-thousand-science-per-min"] == nil then
+    swap_ingredient_in_recipe( data.raw.recipe["advanced-oil-processing"], "water", {type = "fluid", name = "steam", amount = 50} )
+    swap_ingredient_in_recipe( data.raw.recipe["heavy-oil-cracking"], "water", {type = "fluid", name = "steam", amount = 30} )
+    swap_ingredient_in_recipe( data.raw.recipe["light-oil-cracking"], "water", {type = "fluid", name = "steam", amount = 30} )
+    swap_ingredient_in_recipe( data.raw.recipe["sulfur"], "water", {type = "fluid", name = "steam", amount = 30} )
+  end
 end
 
 -- change effectivity module 2 and 3

@@ -32,7 +32,7 @@ end
 
 function swap_ingredient_in_recipe(recipe, ingredientName, substituteIngredient, substituteExpensiveIngredient) 
   if recipe.expensive then
-    recipe.espensive = swap_ingredient_in_ingredient_group(recipe.espensive.ingredients, ingredientName, substituteExpensiveIngredient or substituteIngredient)
+    recipe.expensive = swap_ingredient_in_ingredient_group(recipe.expensive.ingredients, ingredientName, substituteExpensiveIngredient or substituteIngredient)
     recipe.normal = swap_ingredient_in_ingredient_group(recipe.normal.ingredients, ingredientName, substituteIngredient)
   else
     recipe.ingredients = swap_ingredient_in_ingredient_group(recipe.ingredients, ingredientName, substituteIngredient)

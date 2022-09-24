@@ -58,8 +58,8 @@ function get_furnace(nameSuffix, furnacePower, furnaceEffectivity)
       {
         color = {1,0.75,0},
         minimum_light_size = 6,
-        minimum_intensity = 0.45,
-        maximum_intensity = 0.95
+        minimum_intensity = 0.35,
+        maximum_intensity = 0.75
       },
       smoke =
       {
