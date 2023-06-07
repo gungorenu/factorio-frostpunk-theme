@@ -56,7 +56,7 @@ function get_furnace(nameSuffix, furnacePower, furnaceEffectivity)
       emissions_per_minute = get_emission(furnacePower, furnaceEffectivity),
       light_flicker =
       {
-        color = {1,0.75,0},
+        color = {1,0.55,0},
         minimum_light_size = 6,
         minimum_intensity = 0.35,
         maximum_intensity = 0.75

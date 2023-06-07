@@ -61,7 +61,9 @@ local craterForce = nil
 -- add furnace to map
 local add_furnace_record = function(furnace)
   local id = fposition.id(furnace.position)
-  global.furnace_map[id].furnace = furnace
+  if global.furnace_map[id] then
+    global.furnace_map[id].furnace = furnace
+  end
   -- attempts to prevent furnace to be operated without claim
   furnace.operable = false
   furnace.active = false

@@ -90,7 +90,7 @@ data:extend({
       },
       light_flicker =
       {
-        color = {1, 0.75, 0},
+        color = {1, 0.55, 0},
         minimum_light_size = 4,
         minimum_intensity = 0.35,
         maximum_intensity = 0.75
@@ -100,7 +100,7 @@ data:extend({
     {
       type = "electric",
       usage_priority = "secondary-output",
-      buffer_capacity = "1TW",
+      buffer_capacity = "1GW",
       render_no_network_icon = false
     },
     animation =
