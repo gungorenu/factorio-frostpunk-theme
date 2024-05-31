@@ -1,4 +1,4 @@
-require("././util/functions")
+require("util/functions")
 
 local named_entities = settings.startup["fpftheme-namedentities"].value
 

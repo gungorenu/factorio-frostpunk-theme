@@ -1,10 +1,10 @@
 -- source about furnace spawning: https://github.com/Bilka2/AbandonedRuins/blob/master/control.lua
 -- credits go to Bilka2
 
-require("./util/functions")
-require("./prototype/furnace/furnace_functions")
-local fposition = require("./util/position")
-local ftable = require("./util/table")
+require("util/functions")
+require("prototype/furnace/furnace_functions")
+local fposition = require("util/position")
+local ftable = require("util/table")
 local spawning = require("spawning")
 
 -------------------------------------------------------------------------------------------------------------------------------

@@ -1,3 +1,8 @@
+Version: 1.0.2
+Date: 31.05.2024
+  Bugfixes:
+    - start issues, some files were not found after renaming
+---------------------------------------------------------------------------------------------------
 Version: 1.0.1
 Date: 31.05.2024
   Bugfixes:

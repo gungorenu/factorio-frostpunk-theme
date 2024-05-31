@@ -1,5 +1,5 @@
-local fposition = require("./util/position")
-local ftable = require("./util/table")
+local fposition = require("util/position")
+local ftable = require("util/table")
 
 -- source : https://github.com/Bilka2/AbandonedRuins/blob/master/spawning.lua
 -- credits go to Bilka2
