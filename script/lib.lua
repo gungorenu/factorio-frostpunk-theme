@@ -66,7 +66,7 @@ local add_furnace_record = function(furnace)
   end
   -- attempts to prevent furnace to be operated without claim
   furnace.operable = false
-  furnace.active = false
+  furnace.active = not furnaceSpawning
   lprint("furnace added : " .. id)
 end
 
