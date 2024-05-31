@@ -6,7 +6,7 @@
 data:extend({
   {
     type = "trivial-smoke",
-    name = "fpf-torch-smoke",
+    name = "fpftheme-torch-smoke",
     flags = {"not-on-map"},
     duration = 170,
     fade_in_duration = 20,
@@ -38,11 +38,11 @@ data:extend({
 data:extend({
   {
     type = "burner-generator",
-    name = "fpf-torch",
-    icon = "__FPF__/graphics/icons/torch.png",
+    name = "fpftheme-torch",
+    icon = "__FPFTheme__/graphics/icons/torch.png",
     icon_size = 32,
     flags = {"placeable-neutral","player-creation", "not-rotatable"},
-    minable = {mining_time = 0.2, result = "fpf-torch"},
+    minable = {mining_time = 0.2, result = "fpftheme-torch"},
     max_health = 100,
     corpse = "small-remnants",
     open_sound = { filename = "__base__/sound/machine-open.ogg", volume = 0.85 },
@@ -78,7 +78,7 @@ data:extend({
           frequency = 1
         },
         {
-          name = "fpf-torch-smoke",
+          name = "fpftheme-torch-smoke",
           frequency = 20,
           position = {0.1, -1.3},
           deviation = {0.1, 0.1},
@@ -108,7 +108,7 @@ data:extend({
       layers =
       {
         {
-          filename = "__FPF__/graphics/entity/torch/torch.png",
+          filename = "__FPFTheme__/graphics/entity/torch/torch.png",
           priority = "extra-high",
           width = 66,
           height = 74,
@@ -117,7 +117,7 @@ data:extend({
           scale = 1
         },
         {
-          filename = "__FPF__/graphics/entity/torch/torch-fire.png",
+          filename = "__FPFTheme__/graphics/entity/torch/torch-fire.png",
           priority = "extra-high",
           frame_count = 48,
           line_length = 8,
@@ -148,13 +148,13 @@ data:extend({
 data:extend({
   {
     type = "item",
-    name = "fpf-torch",
-    icon = "__FPF__/graphics/icons/torch.png",
+    name = "fpftheme-torch",
+    icon = "__FPFTheme__/graphics/icons/torch.png",
     icon_size = 32,
     flags = {},
     subgroup = "energy",
-    order = "b[lamp]-c[fpf-torch]",
-    place_result = "fpf-torch",
+    order = "b[lamp]-c[fpftheme-torch]",
+    place_result = "fpftheme-torch",
     stack_size = 10
   },
 })
@@ -163,7 +163,7 @@ data:extend({
 data:extend({
   {
     type = "recipe",
-    name = "fpf-torch",
+    name = "fpftheme-torch",
     enabled = "true",
     ingredients =
     {
@@ -171,6 +171,6 @@ data:extend({
       {"pipe", 1},
       {"iron-plate", 2}
     },
-    result = "fpf-torch"
+    result = "fpftheme-torch"
   },
 })

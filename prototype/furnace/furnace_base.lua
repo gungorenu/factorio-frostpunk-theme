@@ -4,7 +4,7 @@ require("furnace_functions")
 data:extend({
   {
       type = "item-subgroup",
-      name = "fpf-entities",
+      name = "fpftheme-entities",
       group = "production",
       order = "e-f"
     },    
@@ -14,8 +14,8 @@ data:extend({
 data:extend({
   {  
     type = "corpse",
-    name = "fpf-furnace-remnants",
-    icon = "__FPF__/graphics/icons/furnace.png",
+    name = "fpftheme-furnace-remnants",
+    icon = "__FPFTheme__/graphics/icons/furnace.png",
     icon_size = 64, icon_mipmaps = 4,
     flags = {"placeable-neutral", "not-on-map"},
     subgroup = "energy-remnants",
@@ -29,7 +29,7 @@ data:extend({
     remove_on_tile_placement = false,
     animation =
     {
-      filename = "__FPF__/graphics/entity/furnace/remnants/furnace-remnants.png",
+      filename = "__FPFTheme__/graphics/entity/furnace/remnants/furnace-remnants.png",
       line_length = 1,
       width = 320,
       height = 320,
@@ -40,7 +40,7 @@ data:extend({
       shift = util.by_pixel(7, 4),
       hr_version =
       {
-        filename = "__FPF__/graphics/entity/furnace/remnants/hr-furnace-remnants.png",
+        filename = "__FPFTheme__/graphics/entity/furnace/remnants/hr-furnace-remnants.png",
         line_length = 1,
         width = 640,
         height = 640,
@@ -70,7 +70,7 @@ data:extend(baseTechnologies)
 data:extend({
   {
     type = "trivial-smoke",
-    name = "fpf-furnace-smoke",
+    name = "fpftheme-furnace-smoke",
     flags = {"not-on-map"},
     duration = 170,
     fade_in_duration = 20,
@@ -112,8 +112,8 @@ data:extend(furnaceEntities)
 data:extend({
   {
     type = "virtual-signal",
-    name = "fpf-signal",
-    icon = "__FPF__/graphics/icons/furnace.png",
+    name = "fpftheme-signal",
+    icon = "__FPFTheme__/graphics/icons/furnace.png",
     icon_size = 64, icon_mipmaps = 4,
     subgroup = "energy",
   }

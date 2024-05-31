@@ -1,9 +1,9 @@
 require("furnace_functions")
 
-local furnacePowerMax = settings.startup["fpf-furnace-upgrade-power-max"].value
-local furnaceEffMax = settings.startup["fpf-furnace-upgrade-eff-max"].value
-local powerUpgrade = settings.startup["fpf-furnace-upgrade-power-upgrade"].value -- in MW, defaults to 3MW
-local effUpgrade = settings.startup["fpf-furnace-upgrade-eff-upgrade"].value -- in %, defaults to %5
+local furnacePowerMax = settings.startup["fpftheme-furnace-upgrade-power-max"].value
+local furnaceEffMax = settings.startup["fpftheme-furnace-upgrade-eff-max"].value
+local powerUpgrade = settings.startup["fpftheme-furnace-upgrade-power-upgrade"].value -- in MW, defaults to 3MW
+local effUpgrade = settings.startup["fpftheme-furnace-upgrade-eff-upgrade"].value -- in %, defaults to %5
 
 -- fake infinite entities
 local furnaceEntities = {}

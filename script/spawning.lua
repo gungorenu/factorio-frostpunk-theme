@@ -89,7 +89,7 @@ end
 
 local function spawn_cliff (surface, force, cliffInfo, isCorrection)
   local e = surface.create_entity {
-    name = "fpf-cliff",
+    name = "fpftheme-cliff",
     position = cliffInfo.position,
     force = force,
     raise_built = false,
@@ -227,7 +227,7 @@ local function spawn_crater (cliffChunk, surface, force)
 
   for _, cl in pairs(cliffChunk.entities) do
     local e = surface.create_entity {
-      name = "fpf-cliff",
+      name = "fpftheme-cliff",
       position = cl.position,
       force = force,
       raise_built = false,

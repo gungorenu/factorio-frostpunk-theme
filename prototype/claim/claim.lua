@@ -8,8 +8,8 @@ data:extend
 {
   {
     type = "selection-tool",
-    name = "fpf-claim",
-    icon = "__FPF__/graphics/icons/claim.png",
+    name = "fpftheme-claim",
+    icon = "__FPFTheme__/graphics/icons/claim.png",
     icon_size = 64,
     stack_size = 1,
     selection_color = {1, 1, 1},
@@ -24,21 +24,21 @@ data:extend
   },
   {
     type = "shortcut",
-    name = "fpf-claim",
+    name = "fpftheme-claim",
     action = "spawn-item",
     icon =
     {
-      filename = "__FPF__/graphics/icons/claim-shortcut.png",
+      filename = "__FPFTheme__/graphics/icons/claim-shortcut.png",
       size = 32
     },
-    item_to_spawn = "fpf-claim",
-    associated_control_input = "fpf-claim"
+    item_to_spawn = "fpftheme-claim",
+    associated_control_input = "fpftheme-claim"
   },
   {
     type = "custom-input",
-    name = "fpf-claim",
+    name = "fpftheme-claim",
     key_sequence = "SHIFT + C",
     action = "spawn-item",
-    item_to_spawn = "fpf-claim"
+    item_to_spawn = "fpftheme-claim"
   }
 }

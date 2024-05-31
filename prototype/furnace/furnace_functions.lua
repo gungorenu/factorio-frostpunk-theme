@@ -1,6 +1,6 @@
 require("././util/functions")
 
-local named_entities = settings.startup["fpf-namedentities"].value
+local named_entities = settings.startup["fpftheme-namedentities"].value
 
 local function get_emission( furnacePower, furnaceEffectivity)
   local def = 480
@@ -10,17 +10,17 @@ local function get_emission( furnacePower, furnaceEffectivity)
 end  
 
 function get_furnace(nameSuffix, furnacePower, furnaceEffectivity)
-  local localisedName = "entity-name.fpf-furnace"
-  local localisedDesc = "entity-description.fpf-furnace"
+  local localisedName = "entity-name.fpftheme-furnace"
+  local localisedDesc = "entity-description.fpftheme-furnace"
   if named_entities then
-    localisedName = "entity-name.fpf-furnace-named"
-    localisedDesc = "entity-description.fpf-furnace-named"
+    localisedName = "entity-name.fpftheme-furnace-named"
+    localisedDesc = "entity-description.fpftheme-furnace-named"
   end
 
   local furnace = {
     type = "burner-generator",
-    name = "fpf-furnace-"..nameSuffix,
-    icon  = "__FPF__/graphics/icons/furnace.png",
+    name = "fpftheme-furnace-"..nameSuffix,
+    icon  = "__FPFTheme__/graphics/icons/furnace.png",
     icon_size = 64, icon_mipmaps = 4,
     localised_name = {localisedName, furnacePower, furnaceEffectivity*100},
     localised_description = {localisedDesc, furnacePower, furnaceEffectivity*100 },
@@ -28,9 +28,9 @@ function get_furnace(nameSuffix, furnacePower, furnaceEffectivity)
     minable = nil,
     max_health = 1000,
     rotate = false,
-    corpse = "fpf-furnace-remnants",
+    corpse = "fpftheme-furnace-remnants",
     dying_explosion = "nuclear-reactor-explosion", -- << this does not work
-    fast_replaceable_group  = "fpf-furnace",
+    fast_replaceable_group  = "fpftheme-furnace",
     resistances =
     {
       {
@@ -77,7 +77,7 @@ function get_furnace(nameSuffix, furnacePower, furnaceEffectivity)
           slow_down_factor = 0.1
         },
         {
-          name = "fpf-furnace-smoke",
+          name = "fpftheme-furnace-smoke",
           frequency = 25,
           north_position = {-2.5, -1.4},
           south_position = {-2.5, -1.4},
@@ -115,12 +115,12 @@ function get_furnace(nameSuffix, furnacePower, furnaceEffectivity)
       layers =
       {
         {
-          filename = "__FPF__/graphics/entity/furnace/furnace.png",
+          filename = "__FPFTheme__/graphics/entity/furnace/furnace.png",
           width = 320,
           height = 320,
           shift = { -0.03125 *2, -0.1875 *2 },
           hr_version = {
-            filename = "__FPF__/graphics/entity/furnace/hr-furnace.png",
+            filename = "__FPFTheme__/graphics/entity/furnace/hr-furnace.png",
             width = 640,
             height = 640,
             scale = 0.5,
@@ -128,13 +128,13 @@ function get_furnace(nameSuffix, furnacePower, furnaceEffectivity)
           }
         },
         {
-          filename = "__FPF__/graphics/entity/furnace/furnace-shadow.png",
+          filename = "__FPFTheme__/graphics/entity/furnace/furnace-shadow.png",
           width = 525,
           height = 323,
           shift = { 1.625 * 2, 0 },
           draw_as_shadow = true,
           hr_version = {
-            filename = "__FPF__/graphics/entity/furnace/hr-furnace-shadow.png",
+            filename = "__FPFTheme__/graphics/entity/furnace/hr-furnace-shadow.png",
             width = 525*2,
             height = 323*2,
             scale = 0.5,
@@ -172,35 +172,35 @@ function get_furnace_upgrade_tech_power(id, count, time, red, green, black, blue
   local powerUpgrade = 6
   local tech = {
       type = "technology",
-      name = "fpf-furnace-power-upgrade-"..id,
+      name = "fpftheme-furnace-power-upgrade-"..id,
       icons = {
         {
-          icon = "__FPF__/graphics/technology/furnace.png",
+          icon = "__FPFTheme__/graphics/technology/furnace.png",
           icon_size = 256, icon_mipmaps = 1
         },
         {
-          icon = "__FPF__/graphics/technology/furnace-power.png",
+          icon = "__FPFTheme__/graphics/technology/furnace-power.png",
           icon_size = 128,
           icon_mipmaps = 3,
           shift = {100, 100}
         }
       },
-      localised_name = {"technology-name.fpf-furnace-power-upgrade", id },
-      localised_description = {"technology-description.fpf-furnace-power-upgrade", (12 + powerUpgrade * id)},
+      localised_name = {"technology-name.fpftheme-furnace-power-upgrade", id },
+      localised_description = {"technology-description.fpftheme-furnace-power-upgrade", (12 + powerUpgrade * id)},
       prerequisites = {},
       upgrade = true,
       effects =
       {
         {
           type = "nothing",
-          effect_description = {"fpf-furnace-power-upgrade-bonus", powerUpgrade},
+          effect_description = {"fpftheme-furnace-power-upgrade-bonus", powerUpgrade},
           icons = {
             {
-              icon = "__FPF__/graphics/technology/furnace.png",
+              icon = "__FPFTheme__/graphics/technology/furnace.png",
               icon_size = 256, icon_mipmaps = 1
             },
             {
-              icon = "__FPF__/graphics/technology/furnace-power.png",
+              icon = "__FPFTheme__/graphics/technology/furnace-power.png",
               icon_size = 128,
               icon_mipmaps = 3,
               scale = 0.25,
@@ -217,7 +217,7 @@ function get_furnace_upgrade_tech_power(id, count, time, red, green, black, blue
     }    
 
   if id > 1 then
-    table.insert(tech.prerequisites, "fpf-furnace-power-upgrade-"..(id-1))
+    table.insert(tech.prerequisites, "fpftheme-furnace-power-upgrade-"..(id-1))
   end
   if green > 0 then
     table.insert(tech.prerequisites, "logistic-science-pack")
@@ -240,35 +240,35 @@ end
 function get_furnace_power_upgrade_inf_tech(id, powerUpgrade)
   local tech = {
     type = "technology",
-    name = "fpf-furnace-inf-power-upgrade-1",
+    name = "fpftheme-furnace-inf-power-upgrade-1",
     icons = {
       {
-        icon = "__FPF__/graphics/technology/furnace.png",
+        icon = "__FPFTheme__/graphics/technology/furnace.png",
         icon_size = 256, icon_mipmaps = 1
       },
       {
-        icon = "__FPF__/graphics/technology/furnace-power.png",
+        icon = "__FPFTheme__/graphics/technology/furnace-power.png",
         icon_size = 128,
         icon_mipmaps = 3,
         shift = {100, 100}
       }
     },
-    localised_name = {"technology-name.fpf-furnace-inf-power-upgrade", id },
-    localised_description = {"technology-description.fpf-furnace-inf-power-upgrade", powerUpgrade},
-    prerequisites = {"fpf-furnace-power-upgrade-6", "space-science-pack"},
+    localised_name = {"technology-name.fpftheme-furnace-inf-power-upgrade", id },
+    localised_description = {"technology-description.fpftheme-furnace-inf-power-upgrade", powerUpgrade},
+    prerequisites = {"fpftheme-furnace-power-upgrade-6", "space-science-pack"},
     max_level = "infinite",
     effects =
     {
       {
         type = "nothing",
-        effect_description = {"fpf-furnace-power-upgrade-inf-bonus", powerUpgrade},
+        effect_description = {"fpftheme-furnace-power-upgrade-inf-bonus", powerUpgrade},
         icons = {
           {
-            icon = "__FPF__/graphics/technology/furnace.png",
+            icon = "__FPFTheme__/graphics/technology/furnace.png",
             icon_size = 256, icon_mipmaps = 1
           },
           {
-            icon = "__FPF__/graphics/technology/furnace-power.png",
+            icon = "__FPFTheme__/graphics/technology/furnace-power.png",
             icon_size = 128,
             icon_mipmaps = 3,
             scale = 0.25,
@@ -285,7 +285,7 @@ function get_furnace_power_upgrade_inf_tech(id, powerUpgrade)
   }    
 
   if id > 1 then
-    table.insert(tech.prerequisites, "fpf-furnace-inf-power-upgrade-"..(id-1))
+    table.insert(tech.prerequisites, "fpftheme-furnace-inf-power-upgrade-"..(id-1))
   end
   return tech
 end
@@ -293,35 +293,35 @@ end
 function get_furnace_eff_upgrade_inf_tech(id, effUpgrade)
   local tech = {
     type = "technology",
-    name = "fpf-furnace-inf-eff-upgrade-1",
+    name = "fpftheme-furnace-inf-eff-upgrade-1",
     icons = {
       {
-        icon = "__FPF__/graphics/technology/furnace.png",
+        icon = "__FPFTheme__/graphics/technology/furnace.png",
         icon_size = 256, icon_mipmaps = 1
       },
       {
-        icon = "__FPF__/graphics/technology/furnace-eff.png",
+        icon = "__FPFTheme__/graphics/technology/furnace-eff.png",
         icon_size = 128,
         icon_mipmaps = 3,
         shift = {100, 100}
       }
     },
-    localised_name = {"technology-name.fpf-furnace-inf-eff-upgrade", id },
-    localised_description = {"technology-description.fpf-furnace-inf-eff-upgrade", effUpgrade},
-    prerequisites = {"fpf-furnace-power-upgrade-6", "space-science-pack"},
+    localised_name = {"technology-name.fpftheme-furnace-inf-eff-upgrade", id },
+    localised_description = {"technology-description.fpftheme-furnace-inf-eff-upgrade", effUpgrade},
+    prerequisites = {"fpftheme-furnace-power-upgrade-6", "space-science-pack"},
     max_level = "infinite",
     effects =
     {
       {
         type = "nothing",
-        effect_description = {"fpf-furnace-eff-upgrade-inf-bonus", effUpgrade},
+        effect_description = {"fpftheme-furnace-eff-upgrade-inf-bonus", effUpgrade},
         icons = {
           {
-            icon = "__FPF__/graphics/technology/furnace.png",
+            icon = "__FPFTheme__/graphics/technology/furnace.png",
             icon_size = 256, icon_mipmaps = 1
           },
           {
-            icon = "__FPF__/graphics/technology/furnace-eff.png",
+            icon = "__FPFTheme__/graphics/technology/furnace-eff.png",
             icon_size = 128,
             icon_mipmaps = 3,
             scale = 0.25,
@@ -338,7 +338,7 @@ function get_furnace_eff_upgrade_inf_tech(id, effUpgrade)
   }    
 
   if id > 1 then
-    table.insert(tech.prerequisites, "fpf-furnace-inf-eff-upgrade-"..(id-1))
+    table.insert(tech.prerequisites, "fpftheme-furnace-inf-eff-upgrade-"..(id-1))
   end
   return tech
 end
@@ -347,11 +347,11 @@ function get_furnace_name(power,eff, powerUpgradeBonus, effUpgradeBonus)
   -- partially upgraded furnace
   if power <48 and eff == 1 then
     local version = (power/6) -2
-    return "fpf-furnace-" .. version
+    return "fpftheme-furnace-" .. version
   end
 
   -- fully upgraded furnace
-  if power ==48 and eff == 1 then return "fpf-furnace-6" end
+  if power ==48 and eff == 1 then return "fpftheme-furnace-6" end
 
   -- infinite furnaces
   local powerId = 0
@@ -363,5 +363,5 @@ function get_furnace_name(power,eff, powerUpgradeBonus, effUpgradeBonus)
     effId = (eff - 1) / effUpgradeBonus
   end
 
-  return "fpf-furnace-upgraded-power-"..powerId .."-eff-".. effId
+  return "fpftheme-furnace-upgraded-power-"..powerId .."-eff-".. effId
 end

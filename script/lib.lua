@@ -11,13 +11,13 @@ local spawning = require("spawning")
 ---- Mod State and Settings ---------------------------------------------------------------------------------------------------
 
 -- settings
-local furnacePowerUpgrade = settings.startup["fpf-furnace-upgrade-power-upgrade"].value -- in MW, defaults to 3MW
-local furnaceEffUpgrade = settings.startup["fpf-furnace-upgrade-eff-upgrade"].value -- in %, defaults to %5
-local furnaceSpawnBaseRate = settings.global["fpf-furnace-spawn-baserate"].value
-local furnaceSpawnMinDistance = settings.global["fpf-furnace-spawn-mindistance"].value
-local furnaceSpawnAccDistance = settings.global["fpf-furnace-spawn-accdistance"].value
-local furnaceSpawnProbPerChunk = settings.global["fpf-furnace-spawn-rateincrement-perchunk"].value
-local furnaceSpawning = settings.global["fpf-furnace-spawning"].value -- disables spawning of furnaces, basically disables the mod
+local furnacePowerUpgrade = settings.startup["fpftheme-furnace-upgrade-power-upgrade"].value -- in MW, defaults to 3MW
+local furnaceEffUpgrade = settings.startup["fpftheme-furnace-upgrade-eff-upgrade"].value -- in %, defaults to %5
+local furnaceSpawnBaseRate = settings.global["fpftheme-furnace-spawn-baserate"].value
+local furnaceSpawnMinDistance = settings.global["fpftheme-furnace-spawn-mindistance"].value
+local furnaceSpawnAccDistance = settings.global["fpftheme-furnace-spawn-accdistance"].value
+local furnaceSpawnProbPerChunk = settings.global["fpftheme-furnace-spawn-rateincrement-perchunk"].value
+local furnaceSpawning = settings.global["fpftheme-furnace-spawning"].value -- disables spawning of furnaces, basically disables the mod
 
 --[[ mod state info
 global.furnace_map = furnace list, might include destroyed, unclaimed or enemy furnaces
@@ -43,8 +43,8 @@ global.chunk_queue = chunk list that we are interested in
 - - x/y location of furnace as value (string) 
 global.furnace_power = 12, -- starting in MW
 global.furnace_efficiency = 1, -- starting in %, *100
-global.furnace_name = "fpf-furnace-0", -- to spawn this furnace, when upgraded the upgraded furnace shall be spawned, all furnaces are upgraded automatically
-global.fpf_force = will be force of the furnaces,
+global.furnace_name = "fpftheme-furnace-0", -- to spawn this furnace, when upgraded the upgraded furnace shall be spawned, all furnaces are upgraded automatically
+global.fpftheme_force = will be force of the furnaces,
 global.first_furnace = x/y id of first furnace
 --]] 
 
@@ -156,7 +156,7 @@ local update_furnaces = function ()
   local furnaceName = get_furnace_name(global.furnace_power, global.furnace_efficiency, furnacePowerUpgrade, furnaceEffUpgrade/100)
   local furnaceTypes = game.get_filtered_entity_prototypes({{ filter = "name", name = furnaceName }})
   if ftable.length(furnaceTypes) <1 then
-    game.print{ "command-output.fpf-furnace-name-not-found" }
+    game.print{ "command-output.fpftheme-furnace-name-not-found" }
     return
   end
   
@@ -333,7 +333,7 @@ local run_proof = function (furnaceInfo, chunkId)
   end
 
   for _, cl in pairs(chunkData.entities) do
-    local list = furnaceInfo.surface.find_entities_filtered{position= cl.position, radius =2, type="cliff", name="fpf-cliff"}
+    local list = furnaceInfo.surface.find_entities_filtered{position= cl.position, radius =2, type="cliff", name="fpftheme-cliff"}
     local current = nil
     for _, cliff in pairs(list) do 
       if cliff and cliff.valid and cliff.cliff_orientation == cl.orientation then
@@ -390,7 +390,7 @@ local on_created_entity = function(event)
   if not (entity and entity.valid) then return end
   
   local name = entity.name
-  if name:find("fpf%-furnace%-") then
+  if name:find("fpftheme%-furnace%-") then
     add_furnace_record(entity)
   end
 end
@@ -402,7 +402,7 @@ local on_research_finished = function(event)
 
   local name = research.name
 
-  if name:find("fpf%-furnace%-inf%-power%-upgrade%-") then
+  if name:find("fpftheme%-furnace%-inf%-power%-upgrade%-") then
     local number = name:sub(name:len())
     if not tonumber(number) then return end
     local index = research.force.index
@@ -410,7 +410,7 @@ local on_research_finished = function(event)
     global.furnace_power = global.furnace_power + furnacePowerUpgrade
     lprint("furnace infinite power upgrade tech captured")
     update_furnaces()
-  elseif name:find("fpf%-furnace%-inf%-eff%-upgrade%-") then
+  elseif name:find("fpftheme%-furnace%-inf%-eff%-upgrade%-") then
     local number = name:sub(name:len())
     if not tonumber(number) then return end
     local index = research.force.index
@@ -418,7 +418,7 @@ local on_research_finished = function(event)
     global.furnace_efficiency = global.furnace_efficiency + (furnaceEffUpgrade/100)
     lprint("furnace infinite efficiency upgrade tech captured")
     update_furnaces()
-  elseif name:find("fpf%-furnace%-power%-upgrade%-") then
+  elseif name:find("fpftheme%-furnace%-power%-upgrade%-") then
     local number = name:sub(name:len())
     if not tonumber(number) then return end
     local index = research.force.index
@@ -435,13 +435,13 @@ local on_entity_removed = function(event)
   if not (entity and entity.valid) then return end
 
   local name = entity.name
-  if name:find("fpf%-furnace%-") then
+  if name:find("fpftheme%-furnace%-") then
     remove_furnace_record(entity)
   end
 
   -- my cliff is destroyed
-  if name:find("fpf%-cliff") then
-    lprint("FPF-Cliff at " .. entity.position.x .. "/" .. entity.position.y .." with " .. entity.cliff_orientation .." is destroyed")
+  if name:find("fpftheme%-cliff") then
+    lprint("FPFTheme-Cliff at " .. entity.position.x .. "/" .. entity.position.y .." with " .. entity.cliff_orientation .." is destroyed")
   end
 end
 
@@ -480,13 +480,13 @@ end
 
 -- on area selected, for claim
 local on_area_selected = function (event)
-  if event.item ~= "fpf-claim" then return end
+  if event.item ~= "fpftheme-claim" then return end
 
   -- force change
   local claimants_force = game.get_player(event.player_index).force
   local claimants_position = game.get_player(event.player_index).position
   for _, entity in pairs(event.entities) do
-    if entity.valid and entity.force.name == global.fpf_force.name and 
+    if entity.valid and entity.force.name == global.fpftheme_force.name and 
       entity.name ~= "cliff" then
 
       -- only allow claiming if player is nearby, otherwise it can be done via map, which is not intended
@@ -526,7 +526,7 @@ local on_tick = function (event)
       if furnaceInfo.position then
         local furnaceChunkPos = fposition.chunk(furnaceInfo.position)
         if furnaceInfo.surface.is_chunk_generated(furnaceChunkPos) and not furnaceInfo.furnace then
-          local res = spawning.spawn_furnace(furnaceInfo.position, furnaceInfo.surface, global.fpf_force, global.furnace_name)
+          local res = spawning.spawn_furnace(furnaceInfo.position, furnaceInfo.surface, global.fpftheme_force, global.furnace_name)
           if not res.entity then
             dprint("furnace could not be spawned at location: " .. furnaceInfo.id)
           else
@@ -584,17 +584,17 @@ local read_crater_command = function (command)
   local version = arg.version or "0"
 
   if not name then
-    game.print{ "command-output.fpf-read-crater-no-name"}
+    game.print{ "command-output.fpftheme-read-crater-no-name"}
     return
   end
 
   if not radius then
-    game.print{ "command-output.fpf-read-crater-no-radius" }
+    game.print{ "command-output.fpftheme-read-crater-no-radius" }
     return
   end
 
   if radius < 64 then
-    game.print{ "command-output.fpf-read-crater-low-radius"}
+    game.print{ "command-output.fpftheme-read-crater-low-radius"}
     return
   end
 
@@ -624,18 +624,18 @@ local read_crater_command = function (command)
   }
 
   if not temp then 
-    game.print{ "command-output.fpf-read-crater-no-reference"}
+    game.print{ "command-output.fpftheme-read-crater-no-reference"}
     return
   end
 
   temp = table_first(temp)
   if not temp then 
-    game.print{ "command-output.fpf-read-crater-reference-empty"}
+    game.print{ "command-output.fpftheme-read-crater-reference-empty"}
     return
   end
 
   if not temp.valid then
-    game.print{ "command-output.fpf-read-crater-reference-invalid"}
+    game.print{ "command-output.fpftheme-read-crater-reference-invalid"}
     return
   end
 
@@ -703,7 +703,7 @@ local read_crater_command = function (command)
   end
   wf( "  },")
  
-  game.print({ "command-output.fpf-read-crater-range", minx, maxx, miny, maxy} )
+  game.print({ "command-output.fpftheme-read-crater-range", minx, maxx, miny, maxy} )
 
   -- find center of area
   local center = { x = maxx - (maxx - minx) /2, y = maxy - (maxy - miny)/2 }
@@ -717,7 +717,7 @@ local read_crater_command = function (command)
   radius = math.floor(radius +8) -- add some slack
 
   -- add center and radius
-  game.print({ "command-output.fpf-read-crater-center", center.x, center.y, radius})
+  game.print({ "command-output.fpftheme-read-crater-center", center.x, center.y, radius})
   wf( "  clearance = {")
   wf( "    center = { x = " .. math.floor(center.x - reference.x) .. ", y = " .. math.floor(center.y - reference.y) .. "},")
   wf( "    radius = " .. radius .. ",")
@@ -729,7 +729,7 @@ local read_crater_command = function (command)
   wf( "}")
   wf( "return crater")
 
-  game.print({ "command-output.fpf-read-crater-done", filename})
+  game.print({ "command-output.fpftheme-read-crater-done", filename})
 end
 
 -- gives information about the nearby furnace
@@ -742,11 +742,11 @@ local give_furnace_info_command = function (command)
   }
 
   for _, entity in pairs (entities) do
-    if entity and entity.valid and entity.name:find("fpf%-furnace%-") then
+    if entity and entity.valid and entity.name:find("fpftheme%-furnace%-") then
       local id = fposition.id(entity.position)
       local furnaceInfo = global.furnace_map[id]
       if furnaceInfo then
-        game.print{ "command-output.fpf-furnaceinfo-command", entity.position.x, entity.position.y, entity.name, furnaceInfo.claimed, (furnaceInfo.crater or "nil") }
+        game.print{ "command-output.fpftheme-furnaceinfo-command", entity.position.x, entity.position.y, entity.name, furnaceInfo.claimed, (furnaceInfo.crater or "nil") }
         return
       end
     end
@@ -755,9 +755,9 @@ end
 
 -- force replace furnaces to current one
 local replace_furnaces_command = function(command)
-  local furnaceType = game.entity_prototypes[command.parameter or "fpf-furnace-0"]
+  local furnaceType = game.entity_prototypes[command.parameter or "fpftheme-furnace-0"]
   if not furnaceType then 
-    game.print{ "command-output.fpf-spawn-furnace-type-unknown"}
+    game.print{ "command-output.fpftheme-spawn-furnace-type-unknown"}
     return
   end
 
@@ -783,7 +783,7 @@ local prove_crater_command = function(command)
 
   local furnaceInfo = nil
   for _, entity in pairs (entities) do
-    if entity and entity.valid and entity.name:find("fpf%-furnace%-") then
+    if entity and entity.valid and entity.name:find("fpftheme%-furnace%-") then
       local id = fposition.id(entity.position)
       furnaceInfo = global.furnace_map[id]
       if furnaceInfo then
@@ -804,7 +804,7 @@ local spawn_furnace_command = function (command)
   local arg = f()
   local surface = game.surfaces[arg.surface or game.players[command.player_index].surface.name ]
   if not surface then 
-    game.print{"command-output.fpf-spawn-furnace-surface-not-found"}
+    game.print{"command-output.fpftheme-spawn-furnace-surface-not-found"}
     return
   end
 
@@ -820,7 +820,7 @@ local spawn_furnace_command = function (command)
 
     crater = ftable.first(approvedCraters, fname)
     if not crater then 
-      game.print{"command-output.fpf-spawn-furnace-crater-not-found"}
+      game.print{"command-output.fpftheme-spawn-furnace-crater-not-found"}
       return
     end
   end
@@ -849,11 +849,11 @@ local spawn_furnace_command = function (command)
   register_furnace(furnaceInfo, surface, 10 + game.tick)
 end
 
-commands.add_command("fpf-replace-furnaces", {"command-help.fpf-replace-furnaces"} , replace_furnaces_command )
-commands.add_command("fpf-furnace-info", {"command-help.fpf-furnace-info"}, give_furnace_info_command )
-commands.add_command("fpf-read-crater", {"command-help.fpf-read-crater"}, read_crater_command )
-commands.add_command("fpf-prove-crater", {"command-help.fpf-prove-crater"}, prove_crater_command )
-commands.add_command("fpf-spawn-furnace", {"command-help.fpf-spawn-furnace"}, spawn_furnace_command )
+commands.add_command("fpftheme-replace-furnaces", {"command-help.fpftheme-replace-furnaces"} , replace_furnaces_command )
+commands.add_command("fpftheme-furnace-info", {"command-help.fpftheme-furnace-info"}, give_furnace_info_command )
+commands.add_command("fpftheme-read-crater", {"command-help.fpftheme-read-crater"}, read_crater_command )
+commands.add_command("fpftheme-prove-crater", {"command-help.fpftheme-prove-crater"}, prove_crater_command )
+commands.add_command("fpftheme-spawn-furnace", {"command-help.fpftheme-spawn-furnace"}, spawn_furnace_command )
 
 -------------------------------------------------------------------------------------------------------------------------------
 ---- Library Registration -----------------------------------------------------------------------------------------------------
@@ -889,8 +889,8 @@ local defaults = function ()
   global.furnace_map = global.furnace_map or {}
   global.furnace_power = global.furnace_power or 12
   global.furnace_efficiency = global.furnace_efficiency or 1
-  global.furnace_name = global.furnace_name or "fpf-furnace-0"
-  global.fpf_force = global.fpf_force or nil
+  global.furnace_name = global.furnace_name or "fpftheme-furnace-0"
+  global.fpftheme_force = global.fpftheme_force or nil
   global.first_furnace = global.first_furnace or nil
   global.tick_queue = global.tick_queue or {}
   global.chunk_queue = global.chunk_queue or {}
@@ -899,14 +899,14 @@ local defaults = function ()
 end
 
 local self_init = function()
-  local fpf_force = game.forces["fpf-force"]
-  if fpf_force == nil then
-    fpf_force = game.create_force("fpf-force")
+  local fpftheme_force = game.forces["fpftheme-force"]
+  if fpftheme_force == nil then
+    fpftheme_force = game.create_force("fpftheme-force")
     local enemy = game.forces["enemy"]
-    fpf_force.set_cease_fire(enemy, true)
-    enemy.set_cease_fire(fpf_force, true)
+    fpftheme_force.set_cease_fire(enemy, true)
+    enemy.set_cease_fire(fpftheme_force, true)
 
-    global.fpf_force = fpf_force
+    global.fpftheme_force = fpftheme_force
   end
 
   craterForce = game.forces["neutral"]
@@ -922,11 +922,11 @@ local self_init = function()
   end
 
   if global.first_furnace and not furnaceSpawning then
-    game.print{"mod-setting-description.fpf-spawn-warning"}
+    game.print{"mod-setting-description.fpftheme-spawn-warning"}
   elseif furnaceSpawning then
-    game.print{"mod-setting-description.fpf-spawn-enabled"}
+    game.print{"mod-setting-description.fpftheme-spawn-enabled"}
   else 
-    game.print{"mod-setting-description.fpf-spawn-disabled"}
+    game.print{"mod-setting-description.fpftheme-spawn-disabled"}
   end
 
 end

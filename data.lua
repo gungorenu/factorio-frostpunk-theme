@@ -20,7 +20,7 @@ for name,tile in pairs(data.raw.tile) do
   end
 end
 
--- fpf-cliff
-local fpfcliff = table.deepcopy(data.raw["cliff"]["cliff"])
-fpfcliff.name = "fpf-cliff"
-data:extend({fpfcliff})
+-- fpftheme-cliff
+local fpfthemecliff = table.deepcopy(data.raw["cliff"]["cliff"])
+fpfthemecliff.name = "fpftheme-cliff"
+data:extend({fpfthemecliff})

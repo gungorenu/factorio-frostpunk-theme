@@ -1,7 +1,7 @@
 -- dump print, also logs
 function dprint(msg)
   if game then 
-    if settings.global["fpf-debug"].value then
+    if settings.global["fpftheme-debug"].value then
       game.print({"", msg })
     end
     
@@ -12,8 +12,8 @@ end
 -- log print
 function lprint(msg)
   if game then 
-    if settings.global["fpf-logging"].value then
-      game.write_file("fpf-logs.txt", { "", msg .. "\r\n" }, true)
+    if settings.global["fpftheme-logging"].value then
+      game.write_file("fpftheme-logs.txt", { "", msg .. "\r\n" }, true)
     end
   end
 end

@@ -6,7 +6,7 @@ data:extend(
 {
   {
     type = "trivial-smoke",
-    name = "fpf-simple-burner-generator-smoke",
+    name = "fpftheme-simple-burner-generator-smoke",
     flags = {"not-on-map"},
     duration = 100,
     fade_in_duration = 0,
@@ -38,11 +38,11 @@ data:extend(
 data:extend({
   {
     type = "burner-generator",
-    name = "fpf-simple-burner-generator",
-    icon = "__FPF__/graphics/icons/sbg.png",
+    name = "fpftheme-simple-burner-generator",
+    icon = "__FPFTheme__/graphics/icons/sbg.png",
     icon_size = 32,
     flags = {"placeable-neutral","player-creation"},
-    minable = {mining_time = 0.3, result = "fpf-simple-burner-generator"},
+    minable = {mining_time = 0.3, result = "fpftheme-simple-burner-generator"},
     max_health = 450,
     corpse = "small-remnants",
     open_sound = { filename = "__base__/sound/machine-open.ogg", volume = 0.85 },
@@ -86,7 +86,7 @@ data:extend({
           starting_vertical_speed = 0.05,
         },
         {
-          name = "fpf-simple-burner-generator-smoke",
+          name = "fpftheme-simple-burner-generator-smoke",
           frequency = 20,
           north_position = {0.05, 0.9},
           east_position = {0.05, 0.8},
@@ -103,7 +103,7 @@ data:extend({
         layers =
         {
           {
-            filename = "__FPF__/graphics/entity/sbg/sbg-h.png",
+            filename = "__FPFTheme__/graphics/entity/sbg/sbg-h.png",
             priority = "extra-high",
             width = 121,
             height = 80,
@@ -117,7 +117,7 @@ data:extend({
         layers = 
         {
           {
-            filename = "__FPF__/graphics/entity/sbg/sbg-v.png",
+            filename = "__FPFTheme__/graphics/entity/sbg/sbg-v.png",
             priority = "extra-high",
             width = 93,
             height = 112,
@@ -146,13 +146,13 @@ data:extend({
 data:extend({
   {
     type = "item",
-    name = "fpf-simple-burner-generator",
-    icon = "__FPF__/graphics/icons/sbg.png",
+    name = "fpftheme-simple-burner-generator",
+    icon = "__FPFTheme__/graphics/icons/sbg.png",
     icon_size = 32,
     flags = {},
     subgroup = "energy",
-    order = "b[steam-power]-c[fpf-simple-burner-generator]",
-    place_result = "fpf-simple-burner-generator",
+    order = "b[steam-power]-c[fpftheme-simple-burner-generator]",
+    place_result = "fpftheme-simple-burner-generator",
     stack_size = 10
   },
 })
@@ -161,7 +161,7 @@ data:extend({
 data:extend({
   {
     type = "recipe",
-    name = "fpf-simple-burner-generator",
+    name = "fpftheme-simple-burner-generator",
     enabled = "true",
     ingredients =
     {
@@ -170,6 +170,6 @@ data:extend({
       {"pipe", 5},
       {"iron-gear-wheel", 10}
     },
-    result = "fpf-simple-burner-generator"
+    result = "fpftheme-simple-burner-generator"
   },
 })
